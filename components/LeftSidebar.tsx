@@ -5,7 +5,8 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { cn, normalizeImageSrc } from "@/lib/utils";
 import { sidebarLinks } from "@/constants";
-import { SignedIn, useClerk } from "@clerk/nextjs";
+import { SignedIn, useClerk, useUser, UserButton } from "@clerk/nextjs";
+import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAudio } from "@/app/providers/AudioProvider";
 
@@ -13,6 +14,7 @@ const LeftSidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useClerk();
+  const { user } = useUser();
   const { audio } = useAudio();
 
   return (
@@ -56,7 +58,19 @@ const LeftSidebar = () => {
       </nav>
 
       <SignedIn>
-        <div className="flex-center w-full pb-14 max-lg:px-4 lg:pr-8">
+        <div className="flex flex-col gap-4 w-full max-lg:px-4 lg:pr-8 pb-14">
+          <Link
+            href={`/profile/${user?.id}`}
+            className="flex items-center gap-3 max-lg:justify-center"
+          >
+            <UserButton />
+            <div className="flex items-center justify-between w-full max-lg:hidden">
+              <h1 className="text-16 truncate font-semibold text-white-1">
+                {user?.firstName} {user?.lastName}
+              </h1>
+              <ChevronRight size={20} className="text-white-4" />
+            </div>
+          </Link>
           <Button
             className="text-16 w-full bg-orange-1 font-extrabold"
             onClick={() => signOut(() => router.push("/sign-in"))}

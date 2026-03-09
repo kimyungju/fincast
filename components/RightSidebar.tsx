@@ -1,37 +1,16 @@
 "use client";
 
-import { useUser, SignedIn, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAudio } from "@/app/providers/AudioProvider";
-import { ChevronRight } from "lucide-react";
 import TrendingTopics from "./TrendingTopics";
 
 const RightSidebar = ({ inline = false }: { inline?: boolean }) => {
-  const { user } = useUser();
   const { audio } = useAudio();
 
   const content = (
-    <>
-      <SignedIn>
-        <Link
-          href={`/profile/${user?.id}`}
-          className="flex items-center gap-3 pb-8 flex-shrink-0"
-        >
-          <UserButton />
-          <div className="flex items-center justify-between w-full">
-            <h1 className="text-16 truncate font-semibold text-white-1">
-              {user?.firstName} {user?.lastName}
-            </h1>
-            <ChevronRight size={20} className="text-white-4" />
-          </div>
-        </Link>
-      </SignedIn>
-
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <TrendingTopics />
-      </div>
-    </>
+    <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <TrendingTopics />
+    </div>
   );
 
   if (inline) {
