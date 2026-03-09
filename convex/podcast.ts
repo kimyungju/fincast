@@ -69,7 +69,14 @@ export const createPodcast = mutation({
 export const getTrendingPodcasts = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("podcasts").collect();
+    const podcasts = await ctx.db.query("podcasts").collect();
+    podcasts.sort((a, b) => {
+      const scoreA = a.trendingScore ?? 0;
+      const scoreB = b.trendingScore ?? 0;
+      if (scoreB !== scoreA) return scoreB - scoreA;
+      return b.views - a.views;
+    });
+    return podcasts;
   },
 });
 
