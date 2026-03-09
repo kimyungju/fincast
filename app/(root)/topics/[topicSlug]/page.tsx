@@ -3,11 +3,10 @@
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Loader, ArrowLeft, TrendingUp, BarChart3, Mic2 } from "lucide-react";
+import { Loader, ArrowLeft, TrendingUp, Mic2, FileText, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import ThemeBadge from "@/components/ThemeBadge";
 import MentionSparkline from "@/components/MentionSparkline";
-import SentimentBreakdown from "@/components/SentimentBreakdown";
 import RiskChainDisplay from "@/components/RiskChainDisplay";
 import PodcastCard from "@/components/PodcastCard";
 
@@ -21,8 +20,8 @@ const TopicDetailPage = () => {
     api.themes.getDailyMentionCounts,
     theme ? { themeId: theme._id, days: 7 } : "skip",
   );
-  const sentiment = useQuery(
-    api.themes.getSentimentBreakdown,
+  const articles = useQuery(
+    api.themes.getThemeArticles,
     theme ? { themeId: theme._id } : "skip",
   );
   const podcasts = useQuery(
@@ -106,17 +105,6 @@ const TopicDetailPage = () => {
           </div>
         </div>
 
-        {/* Summary */}
-        {theme.latestSummary && (
-          <div className="mb-6 p-4 border-l-4 border-orange-1 bg-orange-1/5">
-            <p className="text-14 text-white-2 font-serif italic leading-relaxed">
-              {theme.latestSummary}
-            </p>
-          </div>
-        )}
-
-        {/* Risk Chain */}
-        {theme.riskChain && <RiskChainDisplay riskChain={theme.riskChain} />}
       </div>
 
       {/* Metrics Grid */}
@@ -146,20 +134,57 @@ const TopicDetailPage = () => {
         </div>
       </div>
 
-      {/* Sentiment */}
-      <div className="card-brutal p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <BarChart3 className="w-5 h-5 text-orange-1" />
-          <h2 className="text-16 font-black text-white-1 uppercase tracking-wide">Sentiment</h2>
+      {/* Latest Developments */}
+      {(theme.latestSummary || theme.riskChain) && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <FileText className="w-5 h-5 text-orange-1" />
+            <h2 className="text-16 font-black text-white-1 uppercase tracking-wide">Latest Developments</h2>
+          </div>
+          <div className="card-brutal p-8 flex flex-col gap-6">
+            {theme.latestSummary && (
+              <p className="text-[18px] text-white-2 font-serif italic leading-relaxed">
+                {theme.latestSummary}
+              </p>
+            )}
+            {theme.riskChain && <RiskChainDisplay riskChain={theme.riskChain} />}
+          </div>
         </div>
-        {sentiment && (
-          <SentimentBreakdown
-            hawkish={sentiment.hawkish}
-            dovish={sentiment.dovish}
-            neutral={sentiment.neutral}
-          />
-        )}
-      </div>
+      )}
+
+      {/* Source Articles */}
+      {articles && articles.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <ExternalLink className="w-5 h-5 text-orange-1" />
+            <h2 className="text-16 font-black text-white-1 uppercase tracking-wide">Source Articles</h2>
+          </div>
+          <div className="flex flex-col gap-4">
+            {articles.map((article, i) => (
+              <div key={article.url + i} className="card-brutal p-5 border-l-4 border-orange-1">
+                <h3 className="text-16 font-bold text-white-1 mb-1">{article.title}</h3>
+                <p className="text-14 text-white-4 leading-relaxed line-clamp-2 mb-3">
+                  {article.mentionSummary}
+                </p>
+                <div className="flex items-center gap-3">
+                  <span className="text-12 font-bold uppercase tracking-wider text-orange-1">
+                    {article.source}
+                  </span>
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-12 text-white-4 hover:text-orange-1 transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Source
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Related Podcasts */}
       <div>
