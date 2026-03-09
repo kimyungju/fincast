@@ -42,6 +42,13 @@ export const getTrendingThemes = query({
   },
 });
 
+export const getThemeById = query({
+  args: { themeId: v.id("macroThemes") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.themeId);
+  },
+});
+
 export const getThemeBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
@@ -315,11 +322,17 @@ export const updateThemeSummary = mutation({
     themeId: v.id("macroThemes"),
     summary: v.string(),
     riskChain: v.string(),
+    summaryArticles: v.optional(v.array(v.object({
+      url: v.string(),
+      title: v.string(),
+      source: v.string(),
+    }))),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.themeId, {
       latestSummary: args.summary,
       riskChain: args.riskChain,
+      summaryArticles: args.summaryArticles,
     });
   },
 });

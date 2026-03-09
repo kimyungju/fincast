@@ -44,6 +44,11 @@ export default defineSchema({
     heatStatus: v.string(),
     latestSummary: v.optional(v.string()),
     riskChain: v.optional(v.string()),
+    summaryArticles: v.optional(v.array(v.object({
+      url: v.string(),
+      title: v.string(),
+      source: v.string(),
+    }))),
     totalMentions: v.number(),
     lastMentionAt: v.number(),
     trendsScore: v.optional(v.number()),
