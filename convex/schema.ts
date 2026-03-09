@@ -78,4 +78,13 @@ export default defineSchema({
     .index("by_theme_and_time", ["themeId", "timestamp"])
     .index("by_source", ["sourceId"]),
 
+  favorites: defineTable({
+    clerkId: v.string(),
+    podcastId: v.id("podcasts"),
+    favoritedAt: v.number(),
+  })
+    .index("by_clerkId", ["clerkId"])
+    .index("by_clerkId_podcastId", ["clerkId", "podcastId"])
+    .index("by_podcastId", ["podcastId"]),
+
 });

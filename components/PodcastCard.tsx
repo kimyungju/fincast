@@ -3,11 +3,11 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMutation } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { normalizeImageSrc } from "@/lib/utils";
-import { Headphones } from "lucide-react";
+import { Headphones, Star } from "lucide-react";
 import ThemeBadge from "./ThemeBadge";
 
 interface ThemeInfo {
@@ -32,6 +32,30 @@ const PodcastCard = ({
   const updateViews = useMutation(api.podcast.updatePodcastViews);
   const [src, setSrc] = React.useState(() => normalizeImageSrc(imgURL));
   const [isHovered, setIsHovered] = React.useState(false);
+
+  const isFavorited = useQuery(api.favorites.isFavorited, { podcastId });
+  const toggleFavorite = useMutation(api.favorites.toggleFavorite);
+  const [optimisticFav, setOptimisticFav] = React.useState<boolean | null>(null);
+
+  const favorited = optimisticFav ?? isFavorited ?? false;
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const newState = !favorited;
+    setOptimisticFav(newState);
+    try {
+      await toggleFavorite({ podcastId });
+    } catch {
+      setOptimisticFav(null);
+    }
+  };
+
+  React.useEffect(() => {
+    if (isFavorited !== undefined) {
+      setOptimisticFav(null);
+    }
+  }, [isFavorited]);
 
   const handleClick = async () => {
     await updateViews({ podcastId });
@@ -74,6 +98,23 @@ const PodcastCard = ({
 
             {/* Corner Accent */}
             <div className="absolute top-0 right-0 w-16 h-16 bg-orange-1 transform translate-x-8 -translate-y-8 rotate-45 opacity-60" />
+
+            {/* Favorite Star */}
+            <button
+              type="button"
+              onClick={handleToggleFavorite}
+              className="absolute top-3 right-3 z-10 cursor-pointer transition-transform duration-200 hover:scale-110 active:scale-95"
+              title={favorited ? "Remove from favorites" : "Add to favorites"}
+            >
+              <Star
+                size={24}
+                className={`drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transition-all duration-200 ${
+                  favorited
+                    ? "fill-yellow-400 text-yellow-400 scale-110"
+                    : "fill-transparent text-cream stroke-[2.5]"
+                }`}
+              />
+            </button>
           </div>
 
           {/* Content Section */}

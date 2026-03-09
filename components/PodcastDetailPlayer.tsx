@@ -3,12 +3,12 @@
 import Image from "next/image";
 import { normalizeImageSrc } from "@/lib/utils";
 import { useAudio } from "@/app/providers/AudioProvider";
-import { useMutation } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Play } from "lucide-react";
+import { Play, Star } from "lucide-react";
 import React from "react";
 
 const PodcastDetailPlayer = ({
@@ -35,6 +35,30 @@ const PodcastDetailPlayer = ({
   const [authorSrc, setAuthorSrc] = React.useState(() =>
     normalizeImageSrc(authorImageUrl)
   );
+
+  const isFavorited = useQuery(api.favorites.isFavorited, {
+    podcastId: podcastId as Id<"podcasts">,
+  });
+  const toggleFavorite = useMutation(api.favorites.toggleFavorite);
+  const [optimisticFav, setOptimisticFav] = React.useState<boolean | null>(null);
+
+  const favorited = optimisticFav ?? isFavorited ?? false;
+
+  const handleToggleFavorite = async () => {
+    const newState = !favorited;
+    setOptimisticFav(newState);
+    try {
+      await toggleFavorite({ podcastId: podcastId as Id<"podcasts"> });
+    } catch {
+      setOptimisticFav(null);
+    }
+  };
+
+  React.useEffect(() => {
+    if (isFavorited !== undefined) {
+      setOptimisticFav(null);
+    }
+  }, [isFavorited]);
 
   const handlePlay = () => {
     setAudio({
@@ -106,6 +130,23 @@ const PodcastDetailPlayer = ({
                 />
               </button>
             )}
+            <button
+              onClick={handleToggleFavorite}
+              className="ml-2 flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
+              title={favorited ? "Remove from favorites" : "Add to favorites"}
+            >
+              <Star
+                size={20}
+                className={`transition-all duration-200 ${
+                  favorited
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "fill-transparent text-white-3 stroke-[2.5]"
+                }`}
+              />
+              <span className="text-12 font-bold text-white-3 uppercase tracking-wide">
+                {favorited ? "Favorited" : "Favorite"}
+              </span>
+            </button>
           </div>
         </div>
       </div>

@@ -169,6 +169,15 @@ export const deletePodcast = mutation({
       // Storage file may already be deleted; continue
     }
 
+    // Clean up favorites referencing this podcast
+    const favorites = await ctx.db
+      .query("favorites")
+      .withIndex("by_podcastId", (q) => q.eq("podcastId", args.podcastId))
+      .collect();
+    for (const fav of favorites) {
+      await ctx.db.delete(fav._id);
+    }
+
     return await ctx.db.delete(args.podcastId);
   },
 });
