@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Loader, ArrowLeft, TrendingUp, Mic2, FileText, ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +26,20 @@ const TopicDetailPage = () => {
     theme ? { themeId: theme._id } : "skip",
   );
   const allThemes = useQuery(api.themes.getTrendingThemes);
+
+  // Auto-generate summary if none exists
+  const generateSummary = useAction(api.themeActions.generateThemeSummary);
+  const generatingRef = useRef(false);
+
+  useEffect(() => {
+    if (theme && !theme.latestSummary && !generatingRef.current) {
+      generatingRef.current = true;
+      generateSummary({ themeId: theme._id }).catch((err) => {
+        console.error("Failed to generate summary:", err);
+        generatingRef.current = false;
+      });
+    }
+  }, [theme, generateSummary]);
 
   // Theme lookup for podcast cards
   const themeMap = new Map<string, { label: string; heatStatus: string }>();
@@ -131,18 +146,17 @@ const TopicDetailPage = () => {
       </div>
 
       {/* Latest Developments */}
-      {(theme.latestSummary || theme.riskChain) && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <FileText className="w-5 h-5 text-orange-1" />
-            <h2 className="text-16 font-black text-white-1 uppercase tracking-wide">Latest Developments</h2>
-          </div>
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <FileText className="w-5 h-5 text-orange-1" />
+          <h2 className="text-16 font-black text-white-1 uppercase tracking-wide">Latest Developments</h2>
+        </div>
+
+        {theme.latestSummary ? (
           <div className="card-brutal p-8 flex flex-col gap-6">
-            {theme.latestSummary && (
-              <p className="text-[18px] text-white-2 font-serif italic leading-relaxed">
-                {theme.latestSummary}
-              </p>
-            )}
+            <p className="text-[18px] text-white-2 font-serif italic leading-relaxed">
+              {theme.latestSummary}
+            </p>
             {theme.riskChain && <RiskChainDisplay riskChain={theme.riskChain} />}
             {theme.summaryArticles && theme.summaryArticles.length > 0 && (
               <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-mid-gray/30">
@@ -165,8 +179,13 @@ const TopicDetailPage = () => {
               </div>
             )}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="card-brutal p-8 flex items-center gap-3">
+            <Loader size={18} className="animate-spin text-orange-1" />
+            <p className="text-14 text-white-4 font-serif italic">Generating summary from latest news...</p>
+          </div>
+        )}
+      </div>
 
       {/* Related Podcasts */}
       <div>
