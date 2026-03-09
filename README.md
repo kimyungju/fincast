@@ -1,18 +1,33 @@
 # Castory
 
-An AI-powered podcast platform that lets you create, discover, and listen to podcasts. Generate news podcasts from trending articles or create custom podcasts with AI-generated audio and cover art.
+An AI-powered podcast platform and **macro economics tracker** built for asset managers. Create AI-narrated news podcasts, track macro-economic themes with real-time heat scoring, and stay on top of market narratives — all in one place.
 
 ## Features
 
-- **AI News Podcast Creator** -- 5-step guided workflow: pick a topic, curate trending articles (via GPT web search), generate a podcast script, convert to speech, and publish
-- **Custom Podcast Creation** -- Write your own script, choose an AI voice, and generate audio + thumbnail
-- **Text-to-Speech** -- Six OpenAI voice options (alloy, shimmer, nova, echo, fable, onyx) with automatic chunking for long scripts
-- **AI Thumbnail Generation** -- DALL-E 3 cover art from text prompts, or upload your own image
-- **Discover & Search** -- Full-text search across podcast titles with debounced input
-- **Persistent Audio Player** -- Sticky bottom player with play/pause, skip, rewind, mute, and progress bar
-- **User Profiles** -- View any creator's profile, podcast count, and total listeners
-- **Draft Persistence** -- News podcast drafts auto-save to localStorage and restore on revisit
-- **Authentication** -- Clerk-powered sign-in/sign-up with webhook sync to Convex
+### Podcast Platform
+- **AI News Podcast Creator** — 5-step guided workflow: pick a macro theme, curate trending articles (via GPT web search), generate a podcast script, convert to speech, and publish
+- **Custom Podcast Creation** — Write your own script, choose an AI voice, and generate audio + thumbnail
+- **Text-to-Speech** — Six OpenAI voice options (alloy, shimmer, nova, echo, fable, onyx) with automatic sentence-aware chunking for long scripts
+- **AI Thumbnail Generation** — DALL-E 3 cover art from text prompts, or upload your own image
+- **Persistent Audio Player** — Sticky bottom player with play/pause, skip, rewind, mute, and progress bar
+- **Discover & Search** — Full-text search across podcast titles, authors, and descriptions
+- **Star / Favorites** — Star podcasts from any card or detail page; dedicated `/favorites` page for quick access
+- **User Profiles** — View any creator's profile, podcast count, and total listeners
+- **Draft Persistence** — News podcast drafts auto-save to localStorage and restore on revisit
+
+### Macro Economics Tracker
+- **15+ Macro Themes** — Pre-seeded themes (Fed policy, oil prices, China slowdown, AI capex, etc.) with real-time heat scoring
+- **Google Trends Integration** — 3-hour cron fetches 30-day trend data and computes momentum-based heat scores
+- **Heat Status Badges** — Color-coded badges (hot / warming / stable / cooling) on every podcast card
+- **Topic Detail Pages** — AI-generated summaries with live source articles, risk chains, mention sparklines, and related podcasts
+- **Trending Sidebar** — Top themes ranked by heat score with 7-day daily sparklines
+- **Auto Theme Tagging** — GPT identifies macro themes from podcast scripts on publish; tags appear within ~15 seconds
+- **Trending Feed** — Home page podcasts ranked by aggregate theme heat, not just chronology
+
+### AI Intelligence
+- **Macro Chatbot** — Floating AI assistant with database-aware context (GPT-4.1-mini, temp 0.3)
+- **Auto-Summaries** — Topic pages auto-generate GPT summaries from live web search on first visit
+- **Smart Defaults** — News wizard auto-fills title, description, voice prompt, and image prompt from generated script
 
 ## Tech Stack
 
@@ -20,12 +35,56 @@ An AI-powered podcast platform that lets you create, discover, and listen to pod
 |-------|-----------|
 | Framework | Next.js 16 (App Router) + React 19 + TypeScript |
 | Backend | Convex (serverless functions, real-time database, file storage) |
-| Auth | Clerk (session management, webhooks) |
-| AI | OpenAI -- GPT-4.1-mini (news search + script generation), TTS-1 (audio), DALL-E 3 (thumbnails) |
-| Styling | Tailwind CSS 4 + shadcn/ui + Lucide React icons |
+| Auth | Clerk (session management, webhooks via Svix) |
+| AI | OpenAI — GPT-4.1-mini (news + scripts + theme tagging + chat), TTS-1 (audio), DALL-E 3 (thumbnails) |
+| Trends | Google Trends API (momentum-based scoring via 3-hour cron) |
+| Styling | Tailwind CSS 4 + shadcn/ui + Radix UI + Lucide React |
 | Forms | React Hook Form + Zod |
-| Notifications | Sonner (toast) |
-| Carousel | Embla Carousel |
+
+## Architecture
+
+```
+                        ┌──────────────────┐
+                        │    Clerk Auth     │
+                        │  (JWT + Webhooks) │
+                        └────────┬─────────┘
+                                 │
+                   Webhook (Svix)│  JWT Token
+                   user.created  │  (per request)
+                   user.updated  │
+                   user.deleted  │
+                                 v
+┌─────────────┐  Convex React  ┌──────────────────┐   External APIs
+│  Next.js 16 │<=============> │     Convex       │ <===========>
+│  App Router │  real-time     │   Serverless     │  OpenAI
+│  + React 19 │  subscriptions │   Backend        │  (GPT / TTS / DALL-E)
+│             │                │                  │
+│  - Pages    │  mutations /   │  - 5 tables      │  Google Trends
+│  - Audio    │  queries /     │  - HTTP Router   │  (3-hour cron)
+│    Provider │  actions       │  - File Storage  │
+│  - ChatBot  │                │  - Cron Jobs     │
+│  - Draft    │                │  - Theme Scoring │
+│    Persist. │                │  - Favorites     │
+└─────────────┘                └──────────────────┘
+```
+
+### Data Model
+
+| Table | Purpose |
+|-------|---------|
+| `podcasts` | Metadata, audio/image storage IDs, denormalized author data, `themeIds[]`, `trendingScore` |
+| `users` | Synced from Clerk webhooks, indexed on `clerkId` |
+| `macroThemes` | Theme metadata, `heatScore`, `heatStatus`, AI summary, source articles, Google Trends data |
+| `themeMentions` | Join table linking podcasts → themes with sentiment, relevance, article details |
+| `favorites` | User ↔ podcast star relationships with `favoritedAt` timestamp |
+
+### Scoring Pipeline
+
+1. **Every 3 hours** (cron): fetch 30-day Google Trends data for each theme
+2. Compute **momentum** = recent 25% avg / earlier 75% avg (ratio >1 = rising)
+3. Map momentum → heat status: `>1.15` hot, `1.03–1.15` warming, `0.88–1.03` stable, `<0.88` cooling
+4. **On podcast publish**: GPT tags themes → `recordMention` → recompute `trendingScore`
+5. **On API failure**: theme keeps existing score (skip-on-failure, no destructive fallback)
 
 ## Getting Started
 
@@ -39,8 +98,8 @@ An AI-powered podcast platform that lets you create, discover, and listen to pod
 ### Install
 
 ```bash
-git clone <your-repo-url>
-cd podcastr
+git clone https://github.com/kimyungju/fintech_hackathon.git
+cd fintech_hackathon
 npm install
 ```
 
@@ -60,7 +119,19 @@ npx convex env set OPENAI_API_KEY <your openai api key>
 npx convex env set CLERK_WEBHOOK_SECRET <your clerk webhook secret>
 ```
 
-> **Clerk Webhook Setup:** In the Clerk dashboard, create a webhook pointing to your Convex HTTP endpoint (`https://<your-deployment>.convex.cloud/clerk`) and subscribe to `user.created`, `user.updated`, and `user.deleted` events. Copy the signing secret into `CLERK_WEBHOOK_SECRET`.
+> **Clerk Webhook Setup:** In the Clerk dashboard, create a webhook pointing to `https://<your-deployment>.convex.cloud/clerk` and subscribe to `user.created`, `user.updated`, and `user.deleted` events.
+
+### Seed Themes
+
+```bash
+npx convex run seedThemes:seedMacroThemes
+```
+
+This populates 15 macro-economic themes. Run the trends cron manually to populate initial heat scores:
+
+```bash
+npx convex run trendsCron:refreshAllTrendsScores
+```
 
 ### Run
 
@@ -68,9 +139,55 @@ npx convex env set CLERK_WEBHOOK_SECRET <your clerk webhook secret>
 npm run dev
 ```
 
-This starts both the Next.js dev server (port 3000) and the Convex dev server concurrently.
+Starts both the Next.js dev server (port 3000) and the Convex dev server.
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Project Structure
+
+```
+app/
+  (auth)/                  # Public auth pages (sign-in, sign-up)
+  (root)/                  # Protected app pages
+    create-podcast/        # Manual podcast creation
+    create-news-podcast/   # AI news podcast wizard
+    discover/              # Browse & search podcasts
+    podcast/[podcastId]/   # Podcast detail + player
+    profile/[profileId]/   # User profile
+    topics/[topicSlug]/    # Theme detail page (summary, sparklines, related)
+    favorites/             # Starred podcasts grid
+  providers/               # AudioProvider, ConvexClerkProvider
+
+components/
+  ChatBot.tsx              # Floating AI macro intelligence assistant
+  GeneratePodcast.tsx      # TTS audio generation
+  GenerateThumbnail.tsx    # DALL-E / upload thumbnail
+  TopicSelector.tsx        # Macro theme picker with search
+  ArticleReview.tsx        # Article curation UI
+  ScriptEditor.tsx         # Script editing + tone/duration controls
+  PodcastPlayer.tsx        # Sticky audio player
+  PodcastCard.tsx          # Podcast grid card with star overlay
+  PodcastDetailPlayer.tsx  # Detail page player + favorite button
+  TrendingTopics.tsx       # Sidebar trending themes with sparklines
+  MentionSparkline.tsx     # SVG polyline sparkline
+  LeftSidebar.tsx          # Navigation sidebar
+  RightSidebar.tsx         # Right sidebar (trending themes)
+
+convex/
+  schema.ts                # 5 tables: podcasts, users, macroThemes, themeMentions, favorites
+  podcast.ts               # CRUD, search, trending sort, cascade delete
+  news.ts                  # GPT news fetch (web_search) + script generation
+  openai.ts                # TTS + DALL-E with sentence-aware chunking
+  themes.ts                # Theme queries/mutations, heat score computation
+  themeActions.ts          # GPT theme tagging + auto-summary generation
+  trendsCron.ts            # Google Trends momentum scoring
+  crons.ts                 # 3-hour interval cron schedule
+  favorites.ts             # Toggle, query, count favorites
+  chat.ts                  # AI chatbot with database context
+  seedThemes.ts            # 15 macro theme seed data
+  user.ts                  # User CRUD (webhook-driven)
+  http.ts                  # HTTP router (Clerk webhooks via Svix)
+```
 
 ## Scripts
 
@@ -78,45 +195,10 @@ Open [http://localhost:3000](http://localhost:3000).
 |---------|-------------|
 | `npm run dev` | Start Next.js + Convex dev servers |
 | `npm run build` | Production build |
-| `npm start` | Start production server |
 | `npm run lint` | Run ESLint |
-
-## Project Structure
-
-```
-app/
-  (auth)/              # Public auth pages (sign-in, sign-up)
-  (root)/              # Protected app pages
-    create-podcast/    # Manual podcast creation
-    create-news-podcast/ # AI news podcast wizard
-    discover/          # Browse & search podcasts
-    podcast/[podcastId]/ # Podcast detail + player
-    profile/[profileId]/ # User profile
-  providers/           # AudioProvider (playback context)
-
-components/
-  GeneratePodcast.tsx  # TTS audio generation
-  GenerateThumbnail.tsx # DALL-E / upload thumbnail
-  TopicSelector.tsx    # News topic picker
-  ArticleReview.tsx    # Article curation UI
-  ScriptEditor.tsx     # Script editing + tone/duration controls
-  PodcastPlayer.tsx    # Sticky audio player
-  PodcastCard.tsx      # Podcast grid card
-  PodcastDetailPlayer.tsx # Detail page player + delete
-  LeftSidebar.tsx      # Navigation sidebar
-  RightSidebar.tsx     # Right sidebar
-  MobileNav.tsx        # Mobile navigation
-  Carousel.tsx         # Embla carousel wrapper
-
-convex/
-  schema.ts            # Database schema (podcasts, users)
-  podcast.ts           # Podcast CRUD queries/mutations
-  news.ts              # News fetch + script generation (GPT actions)
-  openai.ts            # TTS + DALL-E actions
-  user.ts              # User queries/mutations
-  http.ts              # HTTP router (Clerk webhooks)
-  auth.config.ts       # Clerk domain config for Convex
-```
+| `npx convex deploy` | Deploy Convex functions to production |
+| `npx convex run seedThemes:seedMacroThemes` | Seed macro-economic themes |
+| `npx convex run trendsCron:refreshAllTrendsScores` | Manually refresh trend scores |
 
 ## Deployment
 
@@ -127,7 +209,7 @@ convex/
 3. Set environment variables in Vercel project settings:
    - `NEXT_PUBLIC_CONVEX_URL`
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-4. Deploy. Vercel auto-detects Next.js and runs `npm run build`.
+4. Deploy. Vercel auto-detects Next.js.
 
 ### Convex
 
@@ -135,16 +217,14 @@ convex/
 npx convex deploy
 ```
 
-This pushes your Convex functions to production. Make sure production environment variables are set:
+Set production environment variables:
 
 ```bash
 npx convex env set OPENAI_API_KEY <key> --prod
 npx convex env set CLERK_WEBHOOK_SECRET <secret> --prod
 ```
 
-Update `NEXT_PUBLIC_CONVEX_URL` in Vercel to point to your production Convex deployment.
-
-## Environment Variables Reference
+## Environment Variables
 
 | Variable | Where | Description |
 |----------|-------|-------------|
@@ -155,16 +235,17 @@ Update `NEXT_PUBLIC_CONVEX_URL` in Vercel to point to your production Convex dep
 
 ## Troubleshooting
 
-- **"OPENAI_API_KEY is not set"** -- Set it via `npx convex env set OPENAI_API_KEY <key>`, not in `.env.local`. Convex server-side actions read from the Convex environment.
-- **Images not loading** -- Add the image hostname to `remotePatterns` in `next.config.ts`.
-- **Clerk webhook 400/500** -- Verify `CLERK_WEBHOOK_SECRET` matches the signing secret from Clerk dashboard. Check that your webhook URL is `https://<deployment>.convex.cloud/clerk`.
-- **Styles broken after config change** -- Delete `.next/` and restart the dev server.
-- **TTS fails on long scripts** -- Audio generation auto-chunks at 4096 characters. If issues persist, try a shorter script.
+- **"OPENAI_API_KEY is not set"** — Set it via `npx convex env set OPENAI_API_KEY <key>`, not in `.env.local`. Convex actions read from the Convex environment.
+- **Images not loading** — Add the image hostname to `remotePatterns` in `next.config.ts`.
+- **Clerk webhook 400/500** — Verify `CLERK_WEBHOOK_SECRET` matches the Clerk dashboard. Check that your webhook URL ends with `/clerk`.
+- **Styles broken** — Delete `.next/` and restart the dev server.
+- **TTS fails on long scripts** — Audio generation auto-chunks at 4096 characters. If issues persist, try a shorter script.
+- **Google Trends rate-limited** — The cron uses 8s delays between requests. If themes show stale scores, run `npx convex run trendsCron:refreshAllTrendsScores` manually.
+- **Theme badges not appearing** — Theme tagging is async (~10-15s after publish). Refresh the page if badges don't appear.
 
 ## Roadmap
 
+- [ ] Multi-voice episodes (host-and-guest format with speaker labels)
+- [ ] Scheduled daily/weekly news podcast generation via Convex cron
 - [ ] Embed-based podcast recommendations (semantic similarity)
-- [ ] Scheduled daily news podcast generation
-- [ ] Podcast RSS feed export
-- [ ] Comments and likes
-- [ ] Playlist support
+- [ ] Portfolio analytics dashboard for asset managers

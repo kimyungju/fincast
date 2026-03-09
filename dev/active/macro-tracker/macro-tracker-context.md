@@ -1,16 +1,16 @@
 # Macro Economics Tracker — Context Reference
 
-**Last Updated: 2026-03-09 (Session 4)**
+**Last Updated: 2026-03-09 (Session 5)**
 
 ---
 
-## Current State: THEME SUMMARY AUTO-GENERATION IMPLEMENTED
+## Current State: FAVORITES FEATURE COMPLETE (uncommitted)
 
-- Topic detail pages now auto-generate summaries from live web-searched articles
-- `generateThemeSummary` rewired: fetches trending articles via GPT web_search → summarizes → stores summary + riskChain + source article links
-- Source article links appear below summary as `SOURCE_NAME ↗ Source` buttons
-- **Uncommitted**: `app/(root)/topics/[topicSlug]/page.tsx` (auto-trigger + loading state)
-- All backend changes (schema, themes.ts, themeActions.ts) already committed
+- Full star/favorite system implemented (backend + frontend + page)
+- TopicSelector search padding fix + selected text color fix
+- Sidebar star icon SVG fixed to match other icons
+- **All Session 5 changes are uncommitted**
+- Topic detail auto-summary, daily sparklines, theme scoring all working from prior sessions
 
 ---
 
@@ -32,13 +32,17 @@ Inline SVG polyline. Lightweight, no new dependency.
 Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`). "Day / Day" delta instead of "Week / Week". More appropriate for a hackathon project timeline.
 
 ### D6: Auto-Generated Theme Summaries from Web Search (Session 4)
-**Problem**: Seeded themes had no `latestSummary` — the "Latest Developments" section never rendered.
-**Solution**: `generateThemeSummary` now uses GPT web_search (same pattern as `fetchNewsForTopic`) to find trending articles about the theme label, then summarizes them.
-**Trigger**: Auto-fired via `useEffect` on topic detail page when `latestSummary` is missing. Uses `useRef` to prevent double-firing. Convex reactivity auto-updates UI once summary is stored.
-**Storage**: Summary, riskChain, and source article details (url, title, source) stored on `macroThemes` via `summaryArticles` field.
+`generateThemeSummary` uses GPT web_search to find trending articles about the theme label, then summarizes them. Auto-fired via `useEffect` on topic detail page when `latestSummary` is missing. Source article details stored on `macroThemes.summaryArticles`.
 
 ### D7: Article Details on Theme Mentions (Session 4)
-`themeMentions` now has `articleDetails` field (array of {url, title, source}) alongside the flat `sourceArticles` URL array. The `create-news-podcast` page passes full article objects when calling `tagPodcastThemes`.
+`themeMentions` has `articleDetails` field alongside the flat `sourceArticles` URL array. The `create-news-podcast` page passes full article objects when calling `tagPodcastThemes`.
+
+### D8: Star/Favorites System (Session 5)
+**Schema**: `favorites` table with `clerkId` (string), `podcastId` (Id<"podcasts">), `favoritedAt` (number). Indexes: `by_clerkId`, `by_clerkId_podcastId`, `by_podcastId`.
+**Backend** (`convex/favorites.ts`): `toggleFavorite` (idempotent mutation), `isFavorited` (query), `getUserFavorites` (query with full podcast data), `getFavoriteCount` (query).
+**Cascade delete**: `deletePodcast` in `convex/podcast.ts` removes all related favorites.
+**Frontend**: Star overlay on PodcastCard (top-right), favorite button on PodcastDetailPlayer, dedicated `/favorites` page.
+**Design**: Yellow (`yellow-400`) not orange. Favorites only on `/favorites` page — no home page section (user explicitly removed it).
 
 ---
 
@@ -55,14 +59,15 @@ Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`). "Day / Day
 
 | File | Purpose |
 |------|---------|
-| `convex/schema.ts` | Tables: podcasts, users, macroThemes (with summaryArticles, trendsScore), themeMentions (with articleDetails) |
-| `convex/themes.ts` | Queries (getThemeById, getThemeBySlug, getDailyMentionCounts, getThemeArticles, etc.) + Mutations (recordMention with articleDetails, updateThemeSummary with summaryArticles) |
-| `convex/themeActions.ts` | tagPodcastThemes (accepts sourceArticleDetails), generateThemeSummary (web search → summarize → store articles) |
+| `convex/schema.ts` | Tables: podcasts, users, macroThemes, themeMentions, **favorites** |
+| `convex/themes.ts` | Queries (getThemeById, getThemeBySlug, getDailyMentionCounts, etc.) + Mutations (recordMention, updateThemeSummary) |
+| `convex/themeActions.ts` | tagPodcastThemes, generateThemeSummary (web search → summarize → store articles) |
 | `convex/trendsCron.ts` | Momentum-based Google Trends scoring, 8s delays, skip on failure |
 | `convex/crons.ts` | 3-hour interval cron |
 | `convex/news.ts` | fetchNewsForTopic (GPT web_search), generateNewsScript |
 | `convex/seedThemes.ts` | Seeds 15 themes with heatScore 0 |
-| `convex/podcast.ts` | CRUD, getTrendingPodcasts sorts by trendingScore |
+| `convex/podcast.ts` | CRUD, getTrendingPodcasts, **cascade deletes favorites** |
+| `convex/favorites.ts` | **NEW** — toggleFavorite, isFavorited, getUserFavorites, getFavoriteCount |
 
 ## Key Files — Frontend
 
@@ -70,9 +75,15 @@ Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`). "Day / Day
 |------|---------|
 | `app/(root)/topics/[topicSlug]/page.tsx` | Topic detail: auto-generates summary if missing, shows summary + source links + metrics + podcasts |
 | `app/(root)/create-news-podcast/page.tsx` | 5-step wizard — passes full article details to tagPodcastThemes |
+| `app/(root)/favorites/page.tsx` | **NEW** — Favorites grid page with podcast count, LoaderSpinner, EmptyState |
 | `components/TrendingTopics.tsx` | Compact sidebar list with daily sparkline (7 days) |
 | `components/RiskChainDisplay.tsx` | Risk chain callout (orange left border) |
 | `components/MentionSparkline.tsx` | SVG polyline sparkline |
+| `components/PodcastCard.tsx` | Card with **star overlay** (top-right, yellow fill when favorited) |
+| `components/PodcastDetailPlayer.tsx` | Detail player with **favorite button** (Star icon + text label) |
+| `components/TopicSelector.tsx` | Theme picker with search — **inline padding override for search icon** |
+| `constants/index.ts` | Sidebar links: Home, Discover, **Favorites**, Create Podcast, My Profile |
+| `public/icons/star.svg` | White filled star, opacity 0.4 (matches sidebar icon convention) |
 
 ---
 
@@ -85,9 +96,11 @@ Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`). "Day / Day
 | `--color-mid-gray` | `#2a2a2a` | Borders, dividers |
 | `--color-orange` | `#ff6b35` | Primary accent |
 | `--color-cream` | `#f5f1e8` | Text on dark |
+| `yellow-400` | Tailwind default | Star/favorite color (not orange) |
 
 Classes: `card-brutal`, `btn-brutal`, `input-class`, `noise-texture`, `text-display`
 Fonts: Syne 900 uppercase (headings), Crimson Pro italic (descriptions)
+Sidebar icons: `fill="white"` with `opacity="0.4"` (NOT `stroke="currentColor"`)
 
 ---
 
@@ -96,8 +109,11 @@ Fonts: Syne 900 uppercase (headings), Crimson Pro italic (descriptions)
 - **Google Trends rate limiting**: Returns HTML/CAPTCHA. Momentum helper returns `null`, caller skips theme. 8s delays.
 - **Seed data has heatScore 0**: Run `npx convex run trendsCron:refreshAllTrendsScores` after seeding.
 - **`noise-texture` BREAKS `fixed` positioning**: Sets `position: relative` which overrides Tailwind's `fixed`.
-- **Summary auto-generation fires once per page visit**: `useRef` prevents double-fire but if the action fails silently, the loading state persists until page refresh.
-- **`getThemeArticles` query still exists** in `convex/themes.ts` but is no longer used by the topic page (source articles now come from `theme.summaryArticles`). Can be cleaned up or kept for future use.
+- **Summary auto-generation fires once per page visit**: `useRef` prevents double-fire but if the action fails silently, loading state persists until page refresh.
+- **`.input-class` overrides Tailwind padding**: Has `padding: 1rem` in CSS. Use inline `style={{ paddingLeft: '2.75rem' }}` for search inputs with icons (TopicSelector, discover page).
+- **Sidebar SVG icons**: Must use `fill="white"` + `opacity="0.4"`, not `stroke="currentColor"`. Mismatch renders icons black.
+- **TopicSelector selected state**: Don't apply `text-orange-1` — orange border + background tint is sufficient. Always use `text-white-1`.
+- **`getThemeArticles` query** in `convex/themes.ts` is unused (source articles come from `theme.summaryArticles`). Can be cleaned up.
 
 ---
 
