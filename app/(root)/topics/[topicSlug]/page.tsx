@@ -84,10 +84,7 @@ const TopicDetailPage = () => {
       <div className="card-brutal p-8 overflow-hidden">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
           <div>
-            <h1
-              className="font-syne font-black uppercase leading-none break-words text-white-1 mb-3 w-full"
-              style={{ fontSize: "clamp(2rem, 8vw, 6rem)", overflowWrap: "break-word" }}
-            >
+            <h1 className="font-syne font-black uppercase leading-tight break-words text-white-1 mb-3 w-full text-3xl md:text-4xl">
               {theme.label}
             </h1>
             <div className="flex flex-wrap items-center gap-3">
