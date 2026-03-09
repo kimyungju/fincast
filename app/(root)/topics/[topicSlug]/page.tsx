@@ -20,10 +20,6 @@ const TopicDetailPage = () => {
     api.themes.getDailyMentionCounts,
     theme ? { themeId: theme._id, days: 7 } : "skip",
   );
-  const articles = useQuery(
-    api.themes.getThemeArticles,
-    theme ? { themeId: theme._id } : "skip",
-  );
   const podcasts = useQuery(
     api.themes.getPodcastsByTheme,
     theme ? { themeId: theme._id } : "skip",
@@ -148,40 +144,26 @@ const TopicDetailPage = () => {
               </p>
             )}
             {theme.riskChain && <RiskChainDisplay riskChain={theme.riskChain} />}
-          </div>
-        </div>
-      )}
-
-      {/* Source Articles */}
-      {articles && articles.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <ExternalLink className="w-5 h-5 text-orange-1" />
-            <h2 className="text-16 font-black text-white-1 uppercase tracking-wide">Source Articles</h2>
-          </div>
-          <div className="flex flex-col gap-4">
-            {articles.map((article, i) => (
-              <div key={article.url + i} className="card-brutal p-5 border-l-4 border-orange-1">
-                <h3 className="text-16 font-bold text-white-1 mb-1">{article.title}</h3>
-                <p className="text-14 text-white-4 leading-relaxed line-clamp-2 mb-3">
-                  {article.mentionSummary}
-                </p>
-                <div className="flex items-center gap-3">
-                  <span className="text-12 font-bold uppercase tracking-wider text-orange-1">
-                    {article.source}
-                  </span>
-                  <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-12 text-white-4 hover:text-orange-1 transition-colors"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    Source
-                  </a>
-                </div>
+            {theme.summaryArticles && theme.summaryArticles.length > 0 && (
+              <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-mid-gray/30">
+                {theme.summaryArticles.map((article, i) => (
+                  <div key={article.url + i} className="flex items-center gap-2">
+                    <span className="text-12 font-bold uppercase tracking-wider text-orange-1">
+                      {article.source}
+                    </span>
+                    <a
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-12 text-white-4 hover:text-orange-1 transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Source
+                    </a>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}
