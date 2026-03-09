@@ -5,6 +5,7 @@ import LeftSidebar from "@/components/LeftSidebar";
 import RightSidebar from "@/components/RightSidebar";
 import MobileNav from "@/components/MobileNav";
 import PodcastPlayer from "@/components/PodcastPlayer";
+import ChatBot from "@/components/ChatBot";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { useRouter } from "next/navigation";
 import { Loader } from "lucide-react";
@@ -60,6 +61,7 @@ export default function RootGroupLayout({
           <RightSidebar />
         </main>
         <PodcastPlayer />
+        <ChatBot />
       </Authenticated>
     </div>
   );
