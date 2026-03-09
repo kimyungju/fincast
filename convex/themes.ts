@@ -75,16 +75,16 @@ export const searchThemes = query({
   },
 });
 
-export const getWeeklyMentionCounts = query({
+export const getDailyMentionCounts = query({
   args: {
     themeId: v.id("macroThemes"),
-    weeks: v.optional(v.number()),
+    days: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const numWeeks = args.weeks ?? 8;
-    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const numDays = args.days ?? 7;
+    const msPerDay = 24 * 60 * 60 * 1000;
     const now = Date.now();
-    const startTime = now - numWeeks * msPerWeek;
+    const startTime = now - numDays * msPerDay;
 
     const mentions = await ctx.db
       .query("themeMentions")
@@ -93,11 +93,11 @@ export const getWeeklyMentionCounts = query({
       )
       .collect();
 
-    // Bucket into weekly counts (index 0 = oldest week)
-    const buckets: number[] = new Array(numWeeks).fill(0);
+    // Bucket into daily counts (index 0 = oldest day)
+    const buckets: number[] = new Array(numDays).fill(0);
     for (const mention of mentions) {
-      const weekIndex = Math.floor((mention.timestamp - startTime) / msPerWeek);
-      const clampedIndex = Math.min(weekIndex, numWeeks - 1);
+      const dayIndex = Math.floor((mention.timestamp - startTime) / msPerDay);
+      const clampedIndex = Math.min(dayIndex, numDays - 1);
       buckets[clampedIndex] += mention.relevanceScore;
     }
 

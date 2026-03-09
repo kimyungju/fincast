@@ -8,9 +8,9 @@ import MentionSparkline from "./MentionSparkline";
 import { TrendingUp } from "lucide-react";
 
 const TrendingTopicItem = ({ theme }: { theme: any }) => {
-  const sparklineData = useQuery(api.themes.getWeeklyMentionCounts, {
+  const sparklineData = useQuery(api.themes.getDailyMentionCounts, {
     themeId: theme._id,
-    weeks: 4,
+    days: 7,
   });
 
   return (
