@@ -11,14 +11,6 @@ import SentimentBreakdown from "@/components/SentimentBreakdown";
 import RiskChainDisplay from "@/components/RiskChainDisplay";
 import PodcastCard from "@/components/PodcastCard";
 
-function getHeroFontSize(label: string): string {
-  const len = label.length;
-  if (len <= 12) return "text-6xl md:text-7xl";
-  if (len <= 20) return "text-4xl md:text-6xl";
-  if (len <= 30) return "text-3xl md:text-5xl";
-  return "text-2xl md:text-4xl";
-}
-
 const TopicDetailPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -92,7 +84,10 @@ const TopicDetailPage = () => {
       <div className="card-brutal p-8 overflow-hidden">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className={`${getHeroFontSize(theme.label)} font-syne font-black uppercase leading-tight break-words text-white-1 mb-3`}>
+            <h1
+              className="font-syne font-black uppercase leading-none break-words text-white-1 mb-3 w-full"
+              style={{ fontSize: "clamp(2rem, 8vw, 6rem)", overflowWrap: "break-word" }}
+            >
               {theme.label}
             </h1>
             <div className="flex flex-wrap items-center gap-3">
