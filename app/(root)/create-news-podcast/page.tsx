@@ -90,6 +90,7 @@ const CreateNewsPodcast = () => {
   const fetchNews = useAction(api.news.fetchNewsForTopic);
   const generateScript = useAction(api.news.generateNewsScript);
   const createPodcast = useMutation(api.podcast.createPodcast);
+  const tagThemes = useAction(api.themeActions.tagPodcastThemes);
 
   // --- Draft persistence ---
   const DRAFT_KEY = "castory:draft:news-podcast";
@@ -275,7 +276,7 @@ const CreateNewsPodcast = () => {
     setIsSubmitting(true);
 
     try {
-      await createPodcast({
+      const podcastId = await createPodcast({
         podcastTitle,
         podcastDescription,
         audioUrl,
@@ -291,6 +292,22 @@ const CreateNewsPodcast = () => {
 
       toast.success("News podcast published!");
       clearDraft();
+
+      // Fire async theme tagging — don't await, let it run in background
+      const articleUrls = selectedArticleIndexes
+        .map((i) => articles[i]?.url)
+        .filter(Boolean);
+
+      tagThemes({
+        podcastId,
+        scriptText: script,
+        sourceArticleUrls: articleUrls,
+      }).then(() => {
+        console.log("Theme tagging complete for podcast:", podcastId);
+      }).catch((err: unknown) => {
+        console.error("Theme tagging failed:", err);
+      });
+
       router.push("/");
     } catch (error) {
       console.error("Error publishing podcast:", error);

@@ -28,17 +28,6 @@ export const sidebarLinks = [
 
 export const voiceCategories = ["alloy", "shimmer", "nova", "echo", "fable", "onyx"];
 
-export const newsTopics = [
-  { value: "technology", label: "Technology", icon: "Cpu" },
-  { value: "sports", label: "Sports", icon: "Trophy" },
-  { value: "business", label: "Business", icon: "TrendingUp" },
-  { value: "science", label: "Science", icon: "FlaskConical" },
-  { value: "health", label: "Health", icon: "Heart" },
-  { value: "entertainment", label: "Entertainment", icon: "Film" },
-  { value: "politics", label: "Politics", icon: "Landmark" },
-  { value: "world", label: "World", icon: "Globe" },
-] as const;
-
 export const scriptTones = [
   { value: "casual", label: "Casual" },
   { value: "professional", label: "Professional" },
