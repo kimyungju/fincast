@@ -5,159 +5,115 @@
 
 ---
 
-## Phase 1: Data Foundation
+## Phase 1: Data Foundation — COMPLETE
 
-### Task 1: Schema Changes
-- [x] Add `macroThemes` table to `convex/schema.ts`
-- [x] Add `themeMentions` table to `convex/schema.ts`
-- [x] Add `themeIds` and `trendingScore` fields to `podcasts` table
-- [x] Add `by_trendingScore` index to podcasts
-- [x] Verify schema pushes via `npx convex dev`
-- [x] Commit: `feat: add macroThemes and themeMentions tables, extend podcasts`
+### Task 1: Schema Changes ✅
+### Task 2: Theme Queries & Mutations ✅
+### Task 3: OpenAI Theme Tagging Actions ✅
 
-### Task 2: Theme Queries & Mutations
-- [x] Create `convex/themes.ts`
-- [x] Implement `getTrendingThemes` query (by heatScore desc, limit 20)
-- [x] Implement `getThemeBySlug` query
-- [x] Implement `getThemeMentions` query
-- [x] Implement `searchThemes` query (full-text search)
-- [x] Implement `getWeeklyMentionCounts` query (sparkline data)
-- [x] Implement `getSentimentBreakdown` query
-- [x] Implement `getPodcastsByTheme` query
-- [x] Implement `createTheme` mutation (with slug dedup)
-- [x] Implement `recordMention` mutation (insert + recompute heatScore + recompute trendingScore)
-- [x] Implement `updateThemeSummary` mutation
-- [x] Implement `linkThemesToPodcast` mutation
-- [x] Verify all functions compile via `npx convex dev`
-- [x] Commit: `feat: add theme queries, mutations, and heat score computation`
+## Phase 2: Seed Data — COMPLETE
 
-### Task 3: OpenAI Theme Tagging Actions
-- [x] Create `convex/themeActions.ts` with `"use node"` directive
-- [x] Implement `tagPodcastThemes` action (GPT → Google Trends → create themes → record mentions → link to podcast → generate summaries)
-- [x] Implement `generateThemeSummary` action (GPT → summary + risk chain)
-- [x] Add try-catch around JSON.parse calls for robustness
-- [x] Integrate Google Trends via `google-trends-api` for relevanceScore (replaces GPT-assigned scores)
-- [x] Add `convex/google-trends-api.d.ts` type declaration
-- [x] Verify compilation via `npx convex typecheck`
-- [x] Commit: `feat: use Google Trends for relevanceScore instead of GPT`
+### Task 4: Seed Script ✅
 
----
+## Phase 3: UI Components — COMPLETE
 
-## Phase 2: Seed Data
+### Task 5: Reusable UI Atoms ✅
+### Task 6: Trending Topics Sidebar ✅
 
-### Task 4: Seed Script
-- [x] Create `convex/seedThemes.ts`
-- [x] Define 15 macro themes with realistic heat scores
-- [x] Implement `seedMacroThemes` mutation with idempotency check
-- [x] Run: `npx convex run seedThemes:seedMacroThemes` — "Seeded 15 macro themes"
-- [x] Commit: `feat: add seed script with 15 starter macro themes`
+## Phase 4: Core Pages — COMPLETE
 
----
+### Task 7: Home Page + PodcastCard Badges ✅
+### Task 8: Topic Detail Page ✅
 
-## Phase 3: UI Components
+## Phase 5: Pipeline Wiring — COMPLETE
 
-### Task 5: Reusable UI Atoms
-- [x] Create `components/ThemeBadge.tsx` (heat status colored dot + label, sm/md sizes)
-- [x] Create `components/MentionSparkline.tsx` (inline SVG polyline, no dependencies)
-- [x] Commit: `feat: add ThemeBadge and MentionSparkline reusable components`
+### Task 9: Create Flow + Async Tagging ✅
+### Task 10: Cleanup ✅
 
-### Task 6: Trending Topics Sidebar
-- [x] Create `components/TrendingTopics.tsx` (ranked list with sparklines per item)
-- [x] Replace `components/RightSidebar.tsx` content (remove Carousel, Header, top podcasters; add TrendingTopics)
-- [x] Commit: `feat: replace right sidebar with trending macro topics`
-
----
-
-## Phase 4: Core Pages
-
-### Task 7: Home Page + PodcastCard Badges
-- [x] Update `getTrendingPodcasts` in `convex/podcast.ts` to sort by `trendingScore` desc (fallback: views)
-- [x] Add `themes` prop to `components/PodcastCard.tsx` (ThemeInfo[] with label + heatStatus)
-- [x] Display up to 3 theme badges below podcast card content
-- [x] Update `app/(root)/page.tsx` to pass theme data to PodcastCard
-- [x] Commit: `feat: sort home feed by trendingScore, add theme badges to podcast cards`
-
-### Task 8: Topic Detail Page
-- [x] Create `components/SentimentBreakdown.tsx` (horizontal stacked bar)
-- [x] Create `components/RiskChainDisplay.tsx` (styled risk chain)
-- [x] Create `app/(root)/topics/[topicSlug]/page.tsx`
-- [x] Implement header section (title, heat badge, category, regions, asset classes)
-- [x] Implement AI summary + risk chain display
-- [x] Implement metrics grid (heat score, total mentions, week/week delta, sparkline)
-- [x] Implement sentiment breakdown
-- [x] Implement related podcasts section (sorted by views, CTA if empty)
-- [x] Commit: `feat: add topic detail page with metrics, sentiment, and related podcasts`
-
----
-
-## Phase 5: Pipeline Wiring
-
-### Task 9: Create Flow + Async Tagging
-- [x] Replace `components/TopicSelector.tsx` to query macro themes from Convex
-- [x] Show trending themes in grid with heat badges
-- [x] Add search input for full-text search across themes
-- [x] Handle custom topic (user types something not in DB)
-- [x] Add `tagThemes` action call to `create-news-podcast/page.tsx` handlePublish
-- [x] Fire tagThemes async (fire-and-forget with error logging)
-- [x] Pass `sourceArticleUrls` from selected articles
-- [x] Commit: `feat: replace topic selector with macro themes, wire async theme tagging`
-
-### Task 10: Cleanup
-- [x] Remove `newsTopics` from `constants/index.ts`
-- [x] Verify no remaining imports of `newsTopics` in codebase
-- [x] Verify build succeeds
-- [x] Commit: `chore: remove unused newsTopics constant`
-
----
-
-## Phase 6: Verification
+## Phase 6: Verification — COMPLETE (except live demo)
 
 ### Task 11: End-to-End Demo Flow
-- [x] Ensure seed data exists (`npx convex run seedThemes:seedMacroThemes`)
-- [x] Build passes (`next build` — all routes registered including `/topics/[topicSlug]`)
-- [x] Convex typecheck passes (`npx convex typecheck`)
-- [x] Code review passed — all 18 checklist items verified
-- [x] JSON.parse safety fix applied to `convex/themeActions.ts`
-- [x] Google Trends integration — relevanceScore sourced from real data, not GPT
+- [x] Seed data exists
+- [x] Build passes
+- [x] Convex typecheck passes
+- [x] Code review passed
 - [ ] **Live demo test** (requires `npm run dev` with browser)
 
 ---
 
-## Post-Implementation: Google Trends Integration
-- [x] Install `google-trends-api` npm package
-- [x] Add `getGoogleTrendsScore(keyword)` helper to `convex/themeActions.ts`
-- [x] Modify `tagPodcastThemes` to use Google Trends instead of GPT for relevanceScore
-- [x] Update GPT prompt to NOT request relevanceScore
-- [x] Add type declaration `convex/google-trends-api.d.ts`
-- [x] Verify typecheck + build pass
-- [x] Commit and push: `4e612d6`
+## Post-Implementation Changes
+
+### Google Trends → 3-Hour Cron ✅
+- [x] Created `convex/trendsCron.ts` — refreshAllTrendsScores action
+- [x] Created `convex/crons.ts` — 3-hour interval
+- [x] Removed Google Trends from `themeActions.ts` (relevanceScore fixed at 1.0)
+- [x] Simplified `seedThemes.ts` — pure mutation, heatScore 0
+- [x] `recordMention` no longer recomputes heatScore (cron handles it)
+- [x] Added `recomputeAllTrendingScores` mutation
+- [x] Schema: added `trendsScore` + `trendsUpdatedAt` to macroThemes
+- [x] Commit: `deb1bab`
+
+### UI Bug Fixes ✅
+- [x] Scrollable sidebar — `flex-1 overflow-y-auto scrollbar-hide` wrapper around TrendingTopics
+- [x] Hidden scrollbar CSS utility in `globals.css`
+- [x] Hero heading — `text-3xl md:text-4xl` (fixed, not clamp)
+- [x] Commit: `1b0264b`, `5997193`, `25d924b`
+
+### Query Rename ✅
+- [x] `getWeeklyMentionCounts` → `getDailyMentionCounts` (daily granularity, 7 days)
+- [x] Updated TrendingTopics.tsx + topic detail page
+- [x] Commit: `40897b8`
 
 ---
 
 ## Progress Summary
 
-| Phase | Status | Tasks Done | Tasks Total |
-|-------|--------|-----------|-------------|
-| Phase 1: Data Foundation | ✅ Complete | 3 | 3 |
-| Phase 2: Seed Data | ✅ Complete | 1 | 1 |
-| Phase 3: UI Components | ✅ Complete | 2 | 2 |
-| Phase 4: Core Pages | ✅ Complete | 2 | 2 |
-| Phase 5: Pipeline Wiring | ✅ Complete | 2 | 2 |
-| Phase 6: Verification | ⏳ Build Verified | 1 | 1 |
-| **Total** | **Build Passing, Pushed** | **11** | **11** |
+| Phase | Status |
+|-------|--------|
+| Phase 1: Data Foundation | ✅ Complete |
+| Phase 2: Seed Data | ✅ Complete |
+| Phase 3: UI Components | ✅ Complete |
+| Phase 4: Core Pages | ✅ Complete |
+| Phase 5: Pipeline Wiring | ✅ Complete |
+| Phase 6: Verification | ⏳ Live demo pending |
+| Google Trends Cron | ✅ Complete |
+| UI Bug Fixes | ✅ Complete |
+| AI Chatbot | ✅ Complete (layout fix needs commit) |
+
+## AI Chatbot Feature ✅
+
+### Backend ✅
+- [x] `convex/chat.ts` — `sendMessage` action with DB context gathering + GPT-4.1-mini
+- [x] Auth guard (`ctx.auth.getUserIdentity()`) to prevent unauthenticated API abuse
+- [x] System prompt rebuilt every message (context changes with navigation)
+- [x] Conversation trimmed to 20 messages max
+- [x] Commits: `40e6c09`, `d721656`
+
+### Frontend ✅
+- [x] `components/ChatBot.tsx` — floating panel (closed/open/minimized)
+- [x] Context-aware quick-action chips (different per route)
+- [x] Markdown-lite renderer (bold + arrow chains)
+- [x] Typing indicator (3 bouncing orange dots)
+- [x] Mounted in `app/(root)/layout.tsx` after `<PodcastPlayer />`
+- [x] Commits: `d9f8218`, `a787892`, `4973423`
+
+### Brutalist Redesign ✅
+- [x] Replaced all ad-hoc styles with design system patterns
+- [x] Square FAB (removed `rounded-full`), proper `btn-brutal` shadows
+- [x] 4px borders, `--shadow-brutal`, orange accent strips
+- [x] User bubbles: mini card-brutal with shadow
+- [x] Agent messages: orange left accent stripe
+- [x] Input uses `.input-class` with `.chatbot-input` compact padding
+- [x] Commit: `9ca8e4d`
+
+### Layout Bug Fix ⏳
+- [x] Root cause: `.noise-texture` sets `position: relative`, overrides Tailwind `fixed`
+- [x] Fix: removed `noise-texture` from ChatBot panel className
+- [ ] **Needs commit + push**
+
+---
 
 ## Remaining Work
-1. **Live demo test** — run `npm run dev`, open browser, create a podcast, verify:
-   - Sidebar shows 10+ trending macro themes with heat badges
-   - Clicking a topic opens detail page with metrics
-   - Creating a news podcast uses macro theme picker
-   - After publishing, theme badges appear on podcast card within ~15s
-   - Topic detail page shows new podcast under "Related Podcasts"
-   - Heat scores visually shift after multiple podcast creations
-
-## Known Trade-offs (from code review)
-- Heat score baseline includes current week in 28-day average (acceptable for hackathon)
-- `getPodcastsByTheme` and `recordMention` do full table scans (fine for demo-scale data)
-- `TrendingTopics` fires N+1 queries for sparklines (idiomatic Convex, fine for 10 items)
-- Google Trends can return CAPTCHA/HTML under rate limiting — fallback to score 50
-- Seed data `totalMentions` are hardcoded, not from real `themeMentions` rows
+1. **Commit layout bug fix** + push all chatbot work to remote
+2. **Live demo test** — `npm run dev`, create a podcast, verify full pipeline
+3. After seeding, run `npx convex run trendsCron:refreshAllTrendsScores` to get real heat scores

@@ -282,7 +282,7 @@ const ChatBot = () => {
 
   // --- Open state: full panel ---
   return (
-    <div className="fixed bottom-24 right-6 z-50 flex h-[520px] w-96 max-w-[calc(100vw-2rem)] flex-col border-4 border-[var(--color-off-white)] bg-[var(--color-dark-gray)] shadow-[8px_8px_0_rgba(0,0,0,0.5)] animate-chatbot-slide-up noise-texture">
+    <div className="fixed bottom-24 right-6 z-50 flex h-[520px] w-96 max-w-[calc(100vw-2rem)] flex-col border-4 border-[var(--color-off-white)] bg-[var(--color-dark-gray)] shadow-[8px_8px_0_rgba(0,0,0,0.5)] animate-chatbot-slide-up">
       {/* Orange accent strip */}
       <div className="h-1 w-full bg-[var(--color-orange)] flex-shrink-0" />
 
