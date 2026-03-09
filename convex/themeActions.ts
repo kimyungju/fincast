@@ -138,18 +138,35 @@ export const generateThemeSummary = action({
 
     const openai = new OpenAI({ apiKey });
 
-    const mentions = await ctx.runQuery(api.themes.getThemeMentions, {
+    // 1. Get theme label for the web search
+    const theme = await ctx.runQuery(api.themes.getThemeById, {
       themeId: args.themeId,
-      limit: 10,
+    });
+    if (!theme) return;
+
+    // 2. Fetch trending articles about this theme via web search
+    const searchResponse = await openai.responses.create({
+      model: "gpt-4.1-mini",
+      tools: [{ type: "web_search" }],
+      input: `Find the top 5 trending news articles about "${theme.label}" in macro economics from today. Return ONLY a JSON array with no other text. Each item should have: title (string), summary (2-3 sentence summary), source (publication name), url (article URL). Format: [{"title":"...","summary":"...","source":"...","url":"..."}]`,
     });
 
-    if (mentions.length === 0) {
-      return;
+    const searchText = searchResponse.output_text;
+    const jsonMatch = searchText.match(/\[[\s\S]*\]/);
+
+    let articles: Array<{ title: string; summary: string; source: string; url: string }> = [];
+    if (jsonMatch) {
+      try {
+        articles = JSON.parse(jsonMatch[0]);
+      } catch {
+        console.error("JSON parse error for theme articles:", jsonMatch[0]);
+      }
     }
 
-    const mentionSummaries = mentions
-      .map((m: { sentiment: string; summary: string }, i: number) => `${i + 1}. [${m.sentiment}] ${m.summary}`)
-      .join("\n");
+    // 3. Summarize the articles into a theme summary + risk chain
+    const articleText = articles.length > 0
+      ? articles.map((a, i) => `${i + 1}. [${a.source}] ${a.title}: ${a.summary}`).join("\n")
+      : `Theme: ${theme.label} (${theme.category})`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
@@ -157,20 +174,18 @@ export const generateThemeSummary = action({
         {
           role: "system",
           content:
-            'You are a macro economics analyst. Given recent mentions of a theme, return ONLY a JSON object with "summary" (2-3 sentences) and "riskChain" ("Event → Mechanism → Market Impact").',
+            'You are a macro economics analyst. Given recent news articles about a theme, return ONLY a JSON object with "summary" (2-3 sentences) and "riskChain" ("Event → Mechanism → Market Impact").',
         },
         {
           role: "user",
-          content: mentionSummaries,
+          content: articleText,
         },
       ],
     });
 
     const raw = completion.choices[0]?.message?.content ?? "";
     const objMatch = raw.match(/\{[\s\S]*\}/);
-    if (!objMatch) {
-      return;
-    }
+    if (!objMatch) return;
 
     let parsed: { summary?: string; riskChain?: string };
     try {
@@ -180,10 +195,18 @@ export const generateThemeSummary = action({
       return;
     }
 
+    // 4. Store summary, risk chain, and source articles
+    const summaryArticles = articles.map((a) => ({
+      url: a.url,
+      title: a.title,
+      source: a.source,
+    }));
+
     await ctx.runMutation(api.themes.updateThemeSummary, {
       themeId: args.themeId,
       summary: parsed.summary || "",
       riskChain: parsed.riskChain || "",
+      summaryArticles,
     });
   },
 });
