@@ -24,13 +24,19 @@ const TopicSelector = ({ selectedTopic, onSelect }: TopicSelectorProps) => {
   const displayThemes =
     searchQuery.length >= 2 ? searchResults : trendingThemes;
 
+  const hasExactMatch = displayThemes?.some(
+    (t) => t.label.toLowerCase() === searchQuery.trim().toLowerCase()
+  );
+  const showCustomButton = searchQuery.trim() !== "" && !hasExactMatch;
+
   return (
     <div>
       {/* Search input */}
       <div className="relative mb-6">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white-4" />
         <Input
-          className="input-class pl-12 text-16"
+          className="input-class text-16"
+          style={{ paddingLeft: '2.75rem' }}
           placeholder="Search macro topics..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -52,15 +58,6 @@ const TopicSelector = ({ selectedTopic, onSelect }: TopicSelectorProps) => {
       ) : displayThemes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-4">
           <p className="text-16 text-white-4">No topics found</p>
-          {searchQuery && (
-            <button
-              type="button"
-              className="btn-brutal px-6 py-3 text-14 font-bold uppercase tracking-wide"
-              onClick={() => onSelect(searchQuery)}
-            >
-              Use &ldquo;{searchQuery}&rdquo; as custom topic
-            </button>
-          )}
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -85,9 +82,7 @@ const TopicSelector = ({ selectedTopic, onSelect }: TopicSelectorProps) => {
                   </span>
                 </div>
                 <p
-                  className={`text-14 font-bold uppercase tracking-wide truncate ${
-                    isSelected ? "text-orange-1" : "text-white-1"
-                  }`}
+                  className="text-14 font-bold uppercase tracking-wide truncate text-white-1"
                 >
                   {theme.label}
                 </p>
@@ -97,6 +92,19 @@ const TopicSelector = ({ selectedTopic, onSelect }: TopicSelectorProps) => {
               </button>
             );
           })}
+        </div>
+      )}
+
+      {/* Custom topic button — shown when searching and no exact match */}
+      {showCustomButton && (
+        <div className="flex justify-center mt-6">
+          <button
+            type="button"
+            className="btn-brutal px-6 py-3 text-14 font-bold uppercase tracking-wide"
+            onClick={() => onSelect(searchQuery.trim())}
+          >
+            Use &ldquo;{searchQuery.trim()}&rdquo; as custom topic
+          </button>
         </div>
       )}
     </div>
