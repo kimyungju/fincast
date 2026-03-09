@@ -5,9 +5,40 @@ import { v, ConvexError } from "convex/values";
 import { api } from "./_generated/api";
 import OpenAI from "openai";
 import { Id } from "./_generated/dataModel";
+import googleTrends from "google-trends-api";
 
 // ---------------------------------------------------------------------------
-// Action 1 – Tag a podcast script with macro-economic themes via GPT
+// Helper – Fetch Google Trends interest score (0-100) for a keyword
+// ---------------------------------------------------------------------------
+
+async function getGoogleTrendsScore(keyword: string): Promise<number> {
+  try {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const result = await googleTrends.interestOverTime({
+      keyword,
+      startTime: sevenDaysAgo,
+      endTime: now,
+      geo: "US",
+    });
+
+    const data = JSON.parse(result);
+    const points = data.default?.timelineData;
+    if (!points || points.length === 0) return 50; // default mid-range
+
+    // Use the latest data point's value
+    const latest = points[points.length - 1];
+    return latest?.value?.[0] ?? 50;
+  } catch (error) {
+    console.error(`Google Trends fetch failed for "${keyword}":`, error);
+    return 50; // fallback to mid-range on error
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Action 1 – Tag a podcast script with macro-economic themes via GPT,
+//            then score each theme using Google Trends
 // ---------------------------------------------------------------------------
 
 export const tagPodcastThemes = action({
@@ -30,12 +61,13 @@ export const tagPodcastThemes = action({
       .map((t) => `${t.slug} (${t.label} — ${t.category})`)
       .join("\n");
 
+    // GPT identifies themes (but NOT relevanceScore — that comes from Google Trends)
     const completion = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
-          content: `You are a macro economics analyst. Given a podcast script, identify macro economic themes. Return ONLY a JSON array. Each item: { slug, label, category, regions: string[], assetClasses: string[], sentiment: "hawkish"|"dovish"|"neutral", relevanceScore: 0-1, summary: string }. Map to existing themes where possible:\n${existingThemeList}\nCategories: "Monetary Policy", "Geopolitics", "Commodities", "Trade", "Labor", "Energy", "Fiscal Policy", "Markets", "Technology", "Real Estate", "Regulation". Regions: "US", "EU", "UK", "CN", "JP", "EM", "Global". Asset classes: "rates", "FX", "equities", "commodities", "credit", "crypto".`,
+          content: `You are a macro economics analyst. Given a podcast script, identify macro economic themes discussed. Return ONLY a JSON array. Each item: { slug, label, category, regions: string[], assetClasses: string[], sentiment: "hawkish"|"dovish"|"neutral", summary: string }. Do NOT include relevanceScore — it will be sourced externally. Map to existing themes where possible:\n${existingThemeList}\nCategories: "Monetary Policy", "Geopolitics", "Commodities", "Trade", "Labor", "Energy", "Fiscal Policy", "Markets", "Technology", "Real Estate", "Regulation". Regions: "US", "EU", "UK", "CN", "JP", "EM", "Global". Asset classes: "rates", "FX", "equities", "commodities", "credit", "crypto".`,
         },
         {
           role: "user",
@@ -58,7 +90,6 @@ export const tagPodcastThemes = action({
       regions?: string[];
       assetClasses?: string[];
       sentiment?: string;
-      relevanceScore?: number;
       summary?: string;
     }>;
     try {
@@ -71,6 +102,10 @@ export const tagPodcastThemes = action({
     const themeIds: Id<"macroThemes">[] = [];
 
     for (const tag of tags) {
+      // Fetch Google Trends score for this theme (0-100), normalize to 0-1
+      const trendsScore = await getGoogleTrendsScore(tag.label);
+      const relevanceScore = trendsScore / 100;
+
       const themeId = await ctx.runMutation(api.themes.createTheme, {
         slug: tag.slug,
         label: tag.label,
@@ -84,7 +119,7 @@ export const tagPodcastThemes = action({
         sourceType: "news-podcast",
         sourceId: args.podcastId,
         sentiment: tag.sentiment || "neutral",
-        relevanceScore: Math.min(Math.max(tag.relevanceScore || 0.5, 0), 1),
+        relevanceScore: Math.min(Math.max(relevanceScore, 0), 1),
         summary: tag.summary || "",
         sourceArticles: args.sourceArticleUrls,
       });
