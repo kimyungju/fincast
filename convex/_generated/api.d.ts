@@ -13,6 +13,9 @@ import type * as http from "../http.js";
 import type * as news from "../news.js";
 import type * as openai from "../openai.js";
 import type * as podcast from "../podcast.js";
+import type * as seedThemes from "../seedThemes.js";
+import type * as themeActions from "../themeActions.js";
+import type * as themes from "../themes.js";
 import type * as user from "../user.js";
 
 import type {
@@ -27,6 +30,9 @@ declare const fullApi: ApiFromModules<{
   news: typeof news;
   openai: typeof openai;
   podcast: typeof podcast;
+  seedThemes: typeof seedThemes;
+  themeActions: typeof themeActions;
+  themes: typeof themes;
   user: typeof user;
 }>;
 

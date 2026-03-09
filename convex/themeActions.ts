@@ -51,7 +51,7 @@ export const tagPodcastThemes = action({
       return;
     }
 
-    const tags: Array<{
+    let tags: Array<{
       slug: string;
       label: string;
       category: string;
@@ -60,7 +60,13 @@ export const tagPodcastThemes = action({
       sentiment?: string;
       relevanceScore?: number;
       summary?: string;
-    }> = JSON.parse(arrayMatch[0]);
+    }>;
+    try {
+      tags = JSON.parse(arrayMatch[0]);
+    } catch {
+      console.error("JSON parse error for theme tags:", arrayMatch[0]);
+      return;
+    }
 
     const themeIds: Id<"macroThemes">[] = [];
 
@@ -156,9 +162,13 @@ export const generateThemeSummary = action({
       return;
     }
 
-    const parsed: { summary?: string; riskChain?: string } = JSON.parse(
-      objMatch[0],
-    );
+    let parsed: { summary?: string; riskChain?: string };
+    try {
+      parsed = JSON.parse(objMatch[0]);
+    } catch {
+      console.error("JSON parse error for theme summary:", objMatch[0]);
+      return;
+    }
 
     await ctx.runMutation(api.themes.updateThemeSummary, {
       themeId: args.themeId,
