@@ -26,6 +26,11 @@ export const sendMessage = action({
     ),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Authentication required");
+    }
+
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new ConvexError("OPENAI_API_KEY is not set");

@@ -49,7 +49,8 @@ function getQuickActions(pathname: string): string[] {
 // ---------------------------------------------------------------------------
 
 function renderMessageContent(content: string) {
-  return content.split("\n").map((line, lineIdx) => {
+  const lines = content.split("\n");
+  return lines.map((line, lineIdx) => {
     const parts: React.ReactNode[] = [];
     let remaining = line;
     let partKey = 0;
@@ -97,7 +98,7 @@ function renderMessageContent(content: string) {
     return (
       <span key={lineIdx}>
         {parts}
-        {lineIdx < content.split("\n").length - 1 && <br />}
+        {lineIdx < lines.length - 1 && <br />}
       </span>
     );
   });
