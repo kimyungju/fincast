@@ -6,6 +6,14 @@ import { mutation, query } from "./_generated/server";
 // Helper – not exported
 // ---------------------------------------------------------------------------
 
+function extractDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
 function computeHeatStatus(
   heatScore: number,
   lastMentionAt: number,
@@ -136,6 +144,64 @@ export const getSentimentBreakdown = query({
   },
 });
 
+export const getThemeArticles = query({
+  args: {
+    themeId: v.id("macroThemes"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const mentions = await ctx.db
+      .query("themeMentions")
+      .withIndex("by_theme_and_time", (q) => q.eq("themeId", args.themeId))
+      .order("desc")
+      .take(args.limit ?? 30);
+
+    const seen = new Set<string>();
+    const articles: Array<{
+      url: string;
+      title: string;
+      source: string;
+      sentiment: string;
+      mentionSummary: string;
+    }> = [];
+
+    for (const mention of mentions) {
+      const details = mention.articleDetails ?? [];
+      const urlsOnly = mention.sourceArticles ?? [];
+
+      for (const d of details) {
+        if (!seen.has(d.url)) {
+          seen.add(d.url);
+          articles.push({
+            url: d.url,
+            title: d.title,
+            source: d.source,
+            sentiment: mention.sentiment,
+            mentionSummary: mention.summary,
+          });
+        }
+      }
+
+      // Fallback for old mentions without articleDetails
+      for (const url of urlsOnly) {
+        if (!seen.has(url)) {
+          seen.add(url);
+          const domain = extractDomain(url);
+          articles.push({
+            url,
+            title: domain,
+            source: domain,
+            sentiment: mention.sentiment,
+            mentionSummary: mention.summary,
+          });
+        }
+      }
+    }
+
+    return articles;
+  },
+});
+
 export const getPodcastsByTheme = query({
   args: { themeId: v.id("macroThemes") },
   handler: async (ctx, args) => {
@@ -193,6 +259,11 @@ export const recordMention = mutation({
     relevanceScore: v.number(),
     summary: v.string(),
     sourceArticles: v.optional(v.array(v.string())),
+    articleDetails: v.optional(v.array(v.object({
+      url: v.string(),
+      title: v.string(),
+      source: v.string(),
+    }))),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -206,6 +277,7 @@ export const recordMention = mutation({
       relevanceScore: args.relevanceScore,
       summary: args.summary,
       sourceArticles: args.sourceArticles,
+      articleDetails: args.articleDetails,
       timestamp: now,
     });
 

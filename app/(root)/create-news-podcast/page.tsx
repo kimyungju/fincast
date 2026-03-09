@@ -294,14 +294,21 @@ const CreateNewsPodcast = () => {
       clearDraft();
 
       // Fire async theme tagging — don't await, let it run in background
-      const articleUrls = selectedArticleIndexes
-        .map((i) => articles[i]?.url)
+      const selectedArticles = selectedArticleIndexes
+        .map((i) => articles[i])
         .filter(Boolean);
+      const articleUrls = selectedArticles.map((a) => a.url);
+      const articleDetails = selectedArticles.map((a) => ({
+        url: a.url,
+        title: a.title,
+        source: a.source,
+      }));
 
       tagThemes({
         podcastId,
         scriptText: script,
         sourceArticleUrls: articleUrls,
+        sourceArticleDetails: articleDetails,
       }).then(() => {
         console.log("Theme tagging complete for podcast:", podcastId);
       }).catch((err: unknown) => {

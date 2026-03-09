@@ -62,6 +62,11 @@ export default defineSchema({
     relevanceScore: v.number(),
     summary: v.string(),
     sourceArticles: v.optional(v.array(v.string())),
+    articleDetails: v.optional(v.array(v.object({
+      url: v.string(),
+      title: v.string(),
+      source: v.string(),
+    }))),
     timestamp: v.number(),
   })
     .index("by_theme", ["themeId"])

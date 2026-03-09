@@ -16,6 +16,11 @@ export const tagPodcastThemes = action({
     podcastId: v.id("podcasts"),
     scriptText: v.string(),
     sourceArticleUrls: v.optional(v.array(v.string())),
+    sourceArticleDetails: v.optional(v.array(v.object({
+      url: v.string(),
+      title: v.string(),
+      source: v.string(),
+    }))),
   },
   handler: async (ctx, args) => {
     const apiKey = process.env.OPENAI_API_KEY;
@@ -91,6 +96,7 @@ export const tagPodcastThemes = action({
         relevanceScore: Math.min(Math.max(relevanceScore, 0), 1),
         summary: tag.summary || "",
         sourceArticles: args.sourceArticleUrls,
+        articleDetails: args.sourceArticleDetails,
       });
 
       themeIds.push(themeId);
