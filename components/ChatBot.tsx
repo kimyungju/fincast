@@ -230,7 +230,7 @@ const ChatBot = () => {
     return (
       <button
         onClick={() => setPanelState("open")}
-        className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full border-4 border-[var(--color-charcoal)] bg-[var(--color-orange)] text-white shadow-[4px_4px_0_rgba(0,0,0,0.5)] transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_rgba(0,0,0,0.5)] cursor-pointer"
+        className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center border-4 border-[var(--color-charcoal)] bg-[var(--color-orange)] text-[var(--color-charcoal)] shadow-[8px_8px_0_rgba(0,0,0,0.5)] transition-all hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[12px_12px_0_rgba(0,0,0,0.5)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[2px_2px_0_rgba(0,0,0,0.5)] cursor-pointer"
         aria-label="Open chat"
       >
         <MessageSquare size={24} />
@@ -242,8 +242,9 @@ const ChatBot = () => {
   if (panelState === "minimized") {
     return (
       <div className="fixed bottom-24 right-6 z-50 w-80 animate-chatbot-slide-up">
+        <div className="h-1 w-full bg-[var(--color-orange)]" />
         <div
-          className="flex items-center justify-between border-4 border-[rgba(255,255,255,0.15)] bg-[var(--color-dark-gray)] px-4 py-3 shadow-[4px_4px_0_rgba(255,255,255,0.1)] cursor-pointer"
+          className="flex items-center justify-between border-4 border-t-0 border-[var(--color-off-white)] bg-[var(--color-dark-gray)] px-4 py-3 shadow-[8px_8px_0_rgba(0,0,0,0.5)] cursor-pointer"
           onClick={() => setPanelState("open")}
         >
           <div className="flex items-center gap-2">
@@ -258,7 +259,7 @@ const ChatBot = () => {
                 e.stopPropagation();
                 setPanelState("open");
               }}
-              className="p-1 text-white-4 hover:text-orange-1 transition-colors cursor-pointer"
+              className="p-1.5 text-white-4 hover:text-orange-1 hover:bg-[var(--color-mid-gray)] transition-all cursor-pointer"
               aria-label="Maximize"
             >
               <Maximize2 size={14} />
@@ -268,7 +269,7 @@ const ChatBot = () => {
                 e.stopPropagation();
                 setPanelState("closed");
               }}
-              className="p-1 text-white-4 hover:text-orange-1 transition-colors cursor-pointer"
+              className="p-1.5 text-white-4 hover:text-orange-1 hover:bg-[var(--color-mid-gray)] transition-all cursor-pointer"
               aria-label="Close"
             >
               <X size={14} />
@@ -281,9 +282,12 @@ const ChatBot = () => {
 
   // --- Open state: full panel ---
   return (
-    <div className="fixed bottom-24 right-6 z-50 flex h-[520px] w-96 max-w-[calc(100vw-2rem)] flex-col border-[3px] border-[rgba(255,255,255,0.15)] bg-[var(--color-dark-gray)] shadow-[4px_4px_0_rgba(255,255,255,0.1)] animate-chatbot-slide-up noise-texture">
+    <div className="fixed bottom-24 right-6 z-50 flex h-[520px] w-96 max-w-[calc(100vw-2rem)] flex-col border-4 border-[var(--color-off-white)] bg-[var(--color-dark-gray)] shadow-[8px_8px_0_rgba(0,0,0,0.5)] animate-chatbot-slide-up noise-texture">
+      {/* Orange accent strip */}
+      <div className="h-1 w-full bg-[var(--color-orange)] flex-shrink-0" />
+
       {/* Header */}
-      <div className="flex items-center justify-between border-b-[3px] border-[rgba(255,255,255,0.15)] px-4 py-3 flex-shrink-0">
+      <div className="flex items-center justify-between border-b-4 border-[var(--color-mid-gray)] px-4 py-3 flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-[var(--color-orange)]" />
           <span className="font-syne text-12 font-black uppercase tracking-wider text-white-1">
@@ -293,14 +297,14 @@ const ChatBot = () => {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setPanelState("minimized")}
-            className="p-1 text-white-4 hover:text-orange-1 transition-colors cursor-pointer"
+            className="p-1.5 text-white-4 hover:text-orange-1 hover:bg-[var(--color-mid-gray)] transition-all cursor-pointer"
             aria-label="Minimize"
           >
             <Minus size={14} />
           </button>
           <button
             onClick={() => setPanelState("closed")}
-            className="p-1 text-white-4 hover:text-orange-1 transition-colors cursor-pointer"
+            className="p-1.5 text-white-4 hover:text-orange-1 hover:bg-[var(--color-mid-gray)] transition-all cursor-pointer"
             aria-label="Close"
           >
             <X size={14} />
@@ -318,8 +322,8 @@ const ChatBot = () => {
             <div
               className={`max-w-[85%] text-14 leading-relaxed ${
                 msg.role === "user"
-                  ? "bg-[#2a2a2a] border-2 border-[var(--color-mid-gray)] px-3 py-2 text-white-2"
-                  : "text-white-2"
+                  ? "bg-[var(--color-mid-gray)] border-4 border-[var(--color-off-white)] px-3 py-2 text-white-2 shadow-[4px_4px_0_rgba(0,0,0,0.3)]"
+                  : "border-l-4 border-[var(--color-orange)] pl-3 text-white-2"
               }`}
             >
               {msg.role === "assistant"
@@ -344,13 +348,13 @@ const ChatBot = () => {
       </div>
 
       {/* Quick action chips */}
-      <div className="flex gap-2 overflow-x-auto px-4 py-2 border-t border-[var(--color-mid-gray)] scrollbar-hide flex-shrink-0">
+      <div className="flex gap-2 overflow-x-auto px-4 py-3 border-t-4 border-[var(--color-mid-gray)] scrollbar-hide flex-shrink-0">
         {quickActions.map((action) => (
           <button
             key={action}
             onClick={() => handleSend(action)}
             disabled={isLoading}
-            className="whitespace-nowrap border-2 border-[var(--color-mid-gray)] bg-[var(--color-charcoal)] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white-4 transition-all hover:border-[var(--color-orange)] hover:text-orange-1 disabled:opacity-50 cursor-pointer flex-shrink-0"
+            className="whitespace-nowrap border-4 border-[var(--color-mid-gray)] bg-[var(--color-charcoal)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white-4 shadow-[4px_4px_0_rgba(0,0,0,0.3)] transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:border-[var(--color-orange)] hover:text-orange-1 hover:shadow-[6px_6px_0_rgba(0,0,0,0.3)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_rgba(0,0,0,0.3)] disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 cursor-pointer flex-shrink-0"
           >
             {action}
           </button>
@@ -358,7 +362,7 @@ const ChatBot = () => {
       </div>
 
       {/* Input area */}
-      <div className="flex items-center gap-2 border-t-[3px] border-[rgba(255,255,255,0.15)] px-4 py-3 flex-shrink-0">
+      <div className="flex items-center gap-3 border-t-4 border-[var(--color-mid-gray)] px-4 py-3 flex-shrink-0">
         <input
           ref={inputRef}
           type="text"
@@ -367,12 +371,12 @@ const ChatBot = () => {
           onKeyDown={handleKeyDown}
           placeholder="Ask about macro themes..."
           disabled={isLoading}
-          className="flex-1 bg-[var(--color-charcoal)] border-2 border-[var(--color-mid-gray)] px-3 py-2 text-14 text-white-2 placeholder:text-[var(--color-light-gray)] placeholder:italic focus:outline-none focus:border-[var(--color-orange)] disabled:opacity-50 transition-colors"
+          className="input-class chatbot-input flex-1 text-14 disabled:opacity-50"
         />
         <button
           onClick={() => handleSend()}
           disabled={isLoading || !input.trim()}
-          className="flex h-9 w-9 items-center justify-center bg-[var(--color-orange)] border-2 border-[var(--color-charcoal)] text-[var(--color-charcoal)] transition-all hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_rgba(0,0,0,0.5)] disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
+          className="flex h-10 w-10 items-center justify-center bg-[var(--color-orange)] border-4 border-[var(--color-charcoal)] text-[var(--color-charcoal)] shadow-[4px_4px_0_rgba(0,0,0,0.5)] transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_rgba(0,0,0,0.5)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_rgba(0,0,0,0.5)] disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
           aria-label="Send message"
         >
           <Send size={16} />
