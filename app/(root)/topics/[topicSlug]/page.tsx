@@ -11,6 +11,14 @@ import SentimentBreakdown from "@/components/SentimentBreakdown";
 import RiskChainDisplay from "@/components/RiskChainDisplay";
 import PodcastCard from "@/components/PodcastCard";
 
+function getHeroFontSize(label: string): string {
+  const len = label.length;
+  if (len <= 12) return "text-6xl md:text-7xl";
+  if (len <= 20) return "text-4xl md:text-6xl";
+  if (len <= 30) return "text-3xl md:text-5xl";
+  return "text-2xl md:text-4xl";
+}
+
 const TopicDetailPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -18,8 +26,8 @@ const TopicDetailPage = () => {
 
   const theme = useQuery(api.themes.getThemeBySlug, { slug });
   const sparklineData = useQuery(
-    api.themes.getWeeklyMentionCounts,
-    theme ? { themeId: theme._id, weeks: 8 } : "skip",
+    api.themes.getDailyMentionCounts,
+    theme ? { themeId: theme._id, days: 7 } : "skip",
   );
   const sentiment = useQuery(
     api.themes.getSentimentBreakdown,
@@ -61,12 +69,12 @@ const TopicDetailPage = () => {
     );
   }
 
-  // Compute week-over-week delta
-  let weekDelta = 0;
+  // Compute day-over-day delta
+  let dayDelta = 0;
   if (sparklineData && sparklineData.length >= 2) {
-    const thisWeek = sparklineData[sparklineData.length - 1];
-    const lastWeek = sparklineData[sparklineData.length - 2];
-    weekDelta = lastWeek > 0 ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : 0;
+    const today = sparklineData[sparklineData.length - 1];
+    const yesterday = sparklineData[sparklineData.length - 2];
+    dayDelta = yesterday > 0 ? Math.round(((today - yesterday) / yesterday) * 100) : 0;
   }
 
   return (
@@ -81,10 +89,12 @@ const TopicDetailPage = () => {
       </button>
 
       {/* Header */}
-      <div className="card-brutal p-8">
+      <div className="card-brutal p-8 overflow-hidden">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-display text-white-1 mb-3">{theme.label}</h1>
+            <h1 className={`${getHeroFontSize(theme.label)} font-syne font-black uppercase leading-tight break-words text-white-1 mb-3`}>
+              {theme.label}
+            </h1>
             <div className="flex flex-wrap items-center gap-3">
               <ThemeBadge status={theme.heatStatus} size="md" />
               <span className="text-12 font-bold uppercase tracking-wider text-white-4 border-2 border-mid-gray px-2 py-0.5">
@@ -131,10 +141,10 @@ const TopicDetailPage = () => {
           <span className="text-24 font-black text-white-1">{theme.totalMentions}</span>
         </div>
         <div className="card-brutal p-4">
-          <p className="text-10 uppercase tracking-wider text-white-4 font-bold mb-1">Week / Week</p>
+          <p className="text-10 uppercase tracking-wider text-white-4 font-bold mb-1">Day / Day</p>
           <div className="flex items-center gap-1">
-            <span className={`text-24 font-black ${weekDelta >= 0 ? "text-green-400" : "text-red-400"}`}>
-              {weekDelta >= 0 ? "+" : ""}{weekDelta}%
+            <span className={`text-24 font-black ${dayDelta >= 0 ? "text-green-400" : "text-red-400"}`}>
+              {dayDelta >= 0 ? "+" : ""}{dayDelta}%
             </span>
           </div>
         </div>

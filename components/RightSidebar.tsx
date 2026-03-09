@@ -16,7 +16,7 @@ const RightSidebar = ({ inline = false }: { inline?: boolean }) => {
       <SignedIn>
         <Link
           href={`/profile/${user?.id}`}
-          className="flex items-center gap-3 pb-8"
+          className="flex items-center gap-3 pb-8 flex-shrink-0"
         >
           <UserButton />
           <div className="flex items-center justify-between w-full">
@@ -28,7 +28,9 @@ const RightSidebar = ({ inline = false }: { inline?: boolean }) => {
         </Link>
       </SignedIn>
 
-      <TrendingTopics />
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <TrendingTopics />
+      </div>
     </>
   );
 
