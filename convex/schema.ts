@@ -46,6 +46,8 @@ export default defineSchema({
     riskChain: v.optional(v.string()),
     totalMentions: v.number(),
     lastMentionAt: v.number(),
+    trendsScore: v.optional(v.number()),
+    trendsUpdatedAt: v.optional(v.number()),
   })
     .index("by_slug", ["slug"])
     .index("by_heatScore", ["heatScore"])

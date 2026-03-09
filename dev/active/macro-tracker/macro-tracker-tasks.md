@@ -33,11 +33,13 @@
 
 ### Task 3: OpenAI Theme Tagging Actions
 - [x] Create `convex/themeActions.ts` with `"use node"` directive
-- [x] Implement `tagPodcastThemes` action (GPT → create themes → record mentions → link to podcast → generate summaries)
+- [x] Implement `tagPodcastThemes` action (GPT → Google Trends → create themes → record mentions → link to podcast → generate summaries)
 - [x] Implement `generateThemeSummary` action (GPT → summary + risk chain)
 - [x] Add try-catch around JSON.parse calls for robustness
-- [x] Verify compilation via `npx convex dev`
-- [x] Commit: `feat: add tagPodcastThemes and generateThemeSummary OpenAI actions`
+- [x] Integrate Google Trends via `google-trends-api` for relevanceScore (replaces GPT-assigned scores)
+- [x] Add `convex/google-trends-api.d.ts` type declaration
+- [x] Verify compilation via `npx convex typecheck`
+- [x] Commit: `feat: use Google Trends for relevanceScore instead of GPT`
 
 ---
 
@@ -113,9 +115,22 @@
 ### Task 11: End-to-End Demo Flow
 - [x] Ensure seed data exists (`npx convex run seedThemes:seedMacroThemes`)
 - [x] Build passes (`next build` — all routes registered including `/topics/[topicSlug]`)
+- [x] Convex typecheck passes (`npx convex typecheck`)
 - [x] Code review passed — all 18 checklist items verified
 - [x] JSON.parse safety fix applied to `convex/themeActions.ts`
-- [ ] Live demo test (requires `npm run dev` with browser)
+- [x] Google Trends integration — relevanceScore sourced from real data, not GPT
+- [ ] **Live demo test** (requires `npm run dev` with browser)
+
+---
+
+## Post-Implementation: Google Trends Integration
+- [x] Install `google-trends-api` npm package
+- [x] Add `getGoogleTrendsScore(keyword)` helper to `convex/themeActions.ts`
+- [x] Modify `tagPodcastThemes` to use Google Trends instead of GPT for relevanceScore
+- [x] Update GPT prompt to NOT request relevanceScore
+- [x] Add type declaration `convex/google-trends-api.d.ts`
+- [x] Verify typecheck + build pass
+- [x] Commit and push: `4e612d6`
 
 ---
 
@@ -123,15 +138,26 @@
 
 | Phase | Status | Tasks Done | Tasks Total |
 |-------|--------|-----------|-------------|
-| Phase 1: Data Foundation | Complete | 3 | 3 |
-| Phase 2: Seed Data | Complete | 1 | 1 |
-| Phase 3: UI Components | Complete | 2 | 2 |
-| Phase 4: Core Pages | Complete | 2 | 2 |
-| Phase 5: Pipeline Wiring | Complete | 2 | 2 |
-| Phase 6: Verification | Build Verified | 1 | 1 |
-| **Total** | **Build Passing** | **11** | **11** |
+| Phase 1: Data Foundation | ✅ Complete | 3 | 3 |
+| Phase 2: Seed Data | ✅ Complete | 1 | 1 |
+| Phase 3: UI Components | ✅ Complete | 2 | 2 |
+| Phase 4: Core Pages | ✅ Complete | 2 | 2 |
+| Phase 5: Pipeline Wiring | ✅ Complete | 2 | 2 |
+| Phase 6: Verification | ⏳ Build Verified | 1 | 1 |
+| **Total** | **Build Passing, Pushed** | **11** | **11** |
+
+## Remaining Work
+1. **Live demo test** — run `npm run dev`, open browser, create a podcast, verify:
+   - Sidebar shows 10+ trending macro themes with heat badges
+   - Clicking a topic opens detail page with metrics
+   - Creating a news podcast uses macro theme picker
+   - After publishing, theme badges appear on podcast card within ~15s
+   - Topic detail page shows new podcast under "Related Podcasts"
+   - Heat scores visually shift after multiple podcast creations
 
 ## Known Trade-offs (from code review)
 - Heat score baseline includes current week in 28-day average (acceptable for hackathon)
 - `getPodcastsByTheme` and `recordMention` do full table scans (fine for demo-scale data)
 - `TrendingTopics` fires N+1 queries for sparklines (idiomatic Convex, fine for 10 items)
+- Google Trends can return CAPTCHA/HTML under rate limiting — fallback to score 50
+- Seed data `totalMentions` are hardcoded, not from real `themeMentions` rows

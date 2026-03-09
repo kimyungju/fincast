@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as crons from "../crons.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as news from "../news.js";
@@ -16,6 +17,7 @@ import type * as podcast from "../podcast.js";
 import type * as seedThemes from "../seedThemes.js";
 import type * as themeActions from "../themeActions.js";
 import type * as themes from "../themes.js";
+import type * as trendsCron from "../trendsCron.js";
 import type * as user from "../user.js";
 
 import type {
@@ -25,6 +27,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  crons: typeof crons;
   files: typeof files;
   http: typeof http;
   news: typeof news;
@@ -33,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   seedThemes: typeof seedThemes;
   themeActions: typeof themeActions;
   themes: typeof themes;
+  trendsCron: typeof trendsCron;
   user: typeof user;
 }>;
 

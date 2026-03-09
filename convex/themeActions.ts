@@ -5,36 +5,6 @@ import { v, ConvexError } from "convex/values";
 import { api } from "./_generated/api";
 import OpenAI from "openai";
 import { Id } from "./_generated/dataModel";
-import googleTrends from "google-trends-api";
-
-// ---------------------------------------------------------------------------
-// Helper – Fetch Google Trends interest score (0-100) for a keyword
-// ---------------------------------------------------------------------------
-
-async function getGoogleTrendsScore(keyword: string): Promise<number> {
-  try {
-    const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    const result = await googleTrends.interestOverTime({
-      keyword,
-      startTime: sevenDaysAgo,
-      endTime: now,
-      geo: "US",
-    });
-
-    const data = JSON.parse(result);
-    const points = data.default?.timelineData;
-    if (!points || points.length === 0) return 50; // default mid-range
-
-    // Use the latest data point's value
-    const latest = points[points.length - 1];
-    return latest?.value?.[0] ?? 50;
-  } catch (error) {
-    console.error(`Google Trends fetch failed for "${keyword}":`, error);
-    return 50; // fallback to mid-range on error
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Action 1 – Tag a podcast script with macro-economic themes via GPT,
@@ -58,10 +28,10 @@ export const tagPodcastThemes = action({
     // Fetch existing themes so GPT can map to them
     const existingThemes = await ctx.runQuery(api.themes.getTrendingThemes);
     const existingThemeList = existingThemes
-      .map((t) => `${t.slug} (${t.label} — ${t.category})`)
+      .map((t: { slug: string; label: string; category: string }) => `${t.slug} (${t.label} — ${t.category})`)
       .join("\n");
 
-    // GPT identifies themes (but NOT relevanceScore — that comes from Google Trends)
+    // GPT identifies themes (relevanceScore is fixed — heatScore driven by cron)
     const completion = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
@@ -102,9 +72,8 @@ export const tagPodcastThemes = action({
     const themeIds: Id<"macroThemes">[] = [];
 
     for (const tag of tags) {
-      // Fetch Google Trends score for this theme (0-100), normalize to 0-1
-      const trendsScore = await getGoogleTrendsScore(tag.label);
-      const relevanceScore = trendsScore / 100;
+      // relevanceScore is fixed at 1.0 — heatScore is driven by Google Trends cron
+      const relevanceScore = 1.0;
 
       const themeId = await ctx.runMutation(api.themes.createTheme, {
         slug: tag.slug,
@@ -173,7 +142,7 @@ export const generateThemeSummary = action({
     }
 
     const mentionSummaries = mentions
-      .map((m, i) => `${i + 1}. [${m.sentiment}] ${m.summary}`)
+      .map((m: { sentiment: string; summary: string }, i: number) => `${i + 1}. [${m.sentiment}] ${m.summary}`)
       .join("\n");
 
     const completion = await openai.chat.completions.create({

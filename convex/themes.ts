@@ -209,46 +209,19 @@ export const recordMention = mutation({
       timestamp: now,
     });
 
-    // 2. Recompute heat score from last 28 days
-    const msPerDay = 1000 * 60 * 60 * 24;
-    const twentyEightDaysAgo = now - 28 * msPerDay;
-    const sevenDaysAgo = now - 7 * msPerDay;
-
-    const recentMentions = await ctx.db
-      .query("themeMentions")
-      .withIndex("by_theme_and_time", (q) =>
-        q.eq("themeId", args.themeId).gte("timestamp", twentyEightDaysAgo),
-      )
-      .collect();
-
-    let recentSum = 0;
-    let trailingSum = 0;
-
-    for (const m of recentMentions) {
-      trailingSum += m.relevanceScore;
-      if (m.timestamp >= sevenDaysAgo) {
-        recentSum += m.relevanceScore;
-      }
-    }
-
-    const baseline = trailingSum / 4;
-    const heatScore = recentSum / Math.max(baseline, 1);
-
-    // 3. Compute heat status
+    // 2. Update mention count and timestamp (heatScore is updated by cron)
     const theme = await ctx.db.get(args.themeId);
     if (!theme) throw new ConvexError("Theme not found");
 
-    const heatStatus = computeHeatStatus(heatScore, now, now);
+    const heatStatus = computeHeatStatus(theme.heatScore, now, now);
 
-    // 4. Patch the theme
     await ctx.db.patch(args.themeId, {
-      heatScore,
       heatStatus,
       totalMentions: theme.totalMentions + 1,
       lastMentionAt: now,
     });
 
-    // 5. Recompute trendingScore for all podcasts linked to this theme
+    // 3. Recompute trendingScore for all podcasts linked to this theme
     const allPodcasts = await ctx.db.query("podcasts").collect();
     const linkedPodcasts = allPodcasts.filter(
       (p) => p.themeIds && p.themeIds.includes(args.themeId),
@@ -276,6 +249,44 @@ export const updateThemeSummary = mutation({
       latestSummary: args.summary,
       riskChain: args.riskChain,
     });
+  },
+});
+
+export const updateThemeHeatScore = mutation({
+  args: {
+    themeId: v.id("macroThemes"),
+    heatScore: v.number(),
+    heatStatus: v.string(),
+    trendsScore: v.optional(v.number()),
+    trendsUpdatedAt: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.themeId, {
+      heatScore: args.heatScore,
+      heatStatus: args.heatStatus,
+      ...(args.trendsScore !== undefined && { trendsScore: args.trendsScore }),
+      ...(args.trendsUpdatedAt !== undefined && {
+        trendsUpdatedAt: args.trendsUpdatedAt,
+      }),
+    });
+  },
+});
+
+export const recomputeAllTrendingScores = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const allPodcasts = await ctx.db.query("podcasts").collect();
+
+    for (const podcast of allPodcasts) {
+      if (!podcast.themeIds || podcast.themeIds.length === 0) continue;
+
+      let trendingScore = 0;
+      for (const tid of podcast.themeIds) {
+        const theme = await ctx.db.get(tid);
+        if (theme) trendingScore += theme.heatScore;
+      }
+      await ctx.db.patch(podcast._id, { trendingScore });
+    }
   },
 });
 
