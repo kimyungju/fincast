@@ -17,17 +17,13 @@ function buildEmailHtml(
   title: string,
   description: string,
   transcript: string,
-  imageUrl: string | undefined,
   podcastUrl: string,
+  audioUrl: string | undefined,
 ): string {
   const escapedTranscript = escapeHtml(transcript).replace(/\n/g, "<br>");
 
-  const coverImageRow = imageUrl
-    ? `<tr>
-        <td style="padding:0;">
-          <img src="${imageUrl}" alt="${escapeHtml(title)}" style="display:block;width:100%;height:auto;" />
-        </td>
-      </tr>`
+  const audioButton = audioUrl
+    ? `<a href="${audioUrl}" style="display:inline-block;background-color:#0a0a0a;color:#ffffff;text-decoration:none;text-transform:uppercase;font-size:14px;font-weight:700;padding:12px 28px;border-radius:4px;letter-spacing:1px;border:2px solid #ff6b35;margin-left:12px;">Download Audio</a>`
     : "";
 
   return `<!DOCTYPE html>
@@ -44,8 +40,6 @@ function buildEmailHtml(
               <span style="color:#ff6b35;font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:1px;">Fincast</span>
             </td>
           </tr>
-          <!-- Cover Image -->
-          ${coverImageRow}
           <!-- Title + Description -->
           <tr>
             <td style="padding:24px 32px;">
@@ -57,6 +51,7 @@ function buildEmailHtml(
           <tr>
             <td style="padding:0 32px 24px 32px;">
               <a href="${podcastUrl}" style="display:inline-block;background-color:#ff6b35;color:#ffffff;text-decoration:none;text-transform:uppercase;font-size:14px;font-weight:700;padding:12px 28px;border-radius:4px;letter-spacing:1px;">Listen Now</a>
+              ${audioButton}
             </td>
           </tr>
           <!-- Transcript -->
@@ -115,29 +110,12 @@ export const sendPodcastEmail = action({
       throw new ConvexError("Invalid podcast URL");
     }
 
-    // Build audio attachment if audio exists (skip if >25MB)
-    let audioAttachment: { filename: string; content: Buffer; content_type: string } | undefined;
-    if (podcast.audioStorageId) {
-      const audioBlob = await ctx.storage.get(podcast.audioStorageId);
-      if (audioBlob) {
-        const arrayBuffer = await audioBlob.arrayBuffer();
-        if (arrayBuffer.byteLength <= 25 * 1024 * 1024) {
-          const safeTitle = podcast.podcastTitle.replace(/[^a-zA-Z0-9 _-]/g, "") || "podcast";
-          audioAttachment = {
-            filename: `${safeTitle}.mp3`,
-            content: Buffer.from(arrayBuffer),
-            content_type: "audio/mpeg",
-          };
-        }
-      }
-    }
-
     const html = buildEmailHtml(
       podcast.podcastTitle,
       podcast.podcastDescription,
       podcast.voicePrompt,
-      podcast.imageUrl,
       args.podcastUrl,
+      podcast.audioUrl,
     );
 
     const resend = new Resend(apiKey);
@@ -147,7 +125,6 @@ export const sendPodcastEmail = action({
       to: [userEmail],
       subject: podcast.podcastTitle,
       html,
-      attachments: audioAttachment ? [audioAttachment] : [],
     });
 
     if (error) {
