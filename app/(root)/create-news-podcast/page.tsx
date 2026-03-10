@@ -223,7 +223,7 @@ const CreateNewsPodcast = () => {
         const topicLabel =
           selectedTopic!.charAt(0).toUpperCase() + selectedTopic!.slice(1);
         setPodcastTitle(
-          `${topicLabel} News Briefing — ${new Date().toLocaleDateString()}`
+          `${topicLabel} News Briefing — ${new Date().toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}`
         );
       }
       if (!podcastDescription) {

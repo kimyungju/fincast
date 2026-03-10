@@ -73,7 +73,7 @@ export const sendMessage = action({
           const mentionLines = mentions
             .map(
               (m: { sentiment: string; summary: string; timestamp: number }, i: number) =>
-                `  ${i + 1}. [${m.sentiment}] ${m.summary} (${new Date(m.timestamp).toLocaleDateString()})`,
+                `  ${i + 1}. [${m.sentiment}] ${m.summary} (${new Date(m.timestamp).toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })})`,
             )
             .join("\n");
           contextParts.push(
