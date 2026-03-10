@@ -12,6 +12,7 @@ An AI-powered podcast platform and **macro economics tracker** built for asset m
 - **Persistent Audio Player** — Sticky bottom player with play/pause, skip, rewind, mute, and progress bar
 - **Discover & Search** — Full-text search across podcast titles, authors, and descriptions
 - **Star / Favorites** — Star podcasts from any card or detail page; dedicated `/favorites` page for quick access
+- **Email to Self** — Send any podcast (cover art, transcript, and audio) directly to your email with one click
 - **User Profiles** — View any creator's profile, podcast count, and total listeners
 - **Draft Persistence** — News podcast drafts auto-save to localStorage and restore on revisit
 
