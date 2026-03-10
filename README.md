@@ -1,6 +1,16 @@
 # Fincast
 
-An AI-powered podcast platform and **macro economics tracker** built for asset managers. Create AI-narrated news podcasts, track macro-economic themes with real-time heat scoring, and stay on top of market narratives — all in one place.
+## Project Description
+
+Asset managers are drowning in fragmented market news — macroeconomic releases, central bank commentary, geopolitical developments — spread across multiple platforms. Monitoring is manual, keyword-driven, and prone to blind spots. Critical signals get lost in the noise.
+
+**Fincast** solves this by combining an AI podcast platform with a real-time macro economics tracker. Users select a topic, and GPT-4.1-mini fetches trending articles via live web search, generates a broadcast-quality script, converts it to speech using OpenAI TTS, and publishes — all in under 60 seconds. Every podcast is auto-tagged with macro themes, building a searchable archive that serves as **institutional memory**.
+
+The macro tracker computes **momentum-based heat scores** from Google Trends data every 3 hours, identifying which themes are heating up or cooling down before consensus forms. Topic dashboards display heat scores, 7-day sparklines, AI-generated summaries with source links, and **risk chain analysis** (e.g., "Inflation print → Fed hike → rates volatility"). Themes are tagged with regions and asset classes, connecting related developments across geographies.
+
+A context-aware AI chatbot provides on-demand macro analysis grounded in platform data — not generic responses.
+
+**Stack:** Next.js 16, React 19, Convex, Clerk, OpenAI (GPT-4.1-mini, TTS-1, DALL-E 3), Google Trends API
 
 ## Features
 

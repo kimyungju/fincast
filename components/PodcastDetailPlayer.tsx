@@ -8,7 +8,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Play, Star, Mail, Loader2 } from "lucide-react";
+import { Play, Star, Mail, Loader2, Trash2 } from "lucide-react";
 import React from "react";
 
 const PodcastDetailPlayer = ({
@@ -135,20 +135,6 @@ const PodcastDetailPlayer = ({
                 Owner
               </span>
             )}
-            {isOwner && (
-              <button
-                onClick={handleDelete}
-                className="ml-2 cursor-pointer hover:opacity-80 transition-opacity"
-                title="Delete podcast"
-              >
-                <Image
-                  src="/icons/delete.svg"
-                  width={18}
-                  height={18}
-                  alt="Delete podcast"
-                />
-              </button>
-            )}
             <button
               onClick={handleToggleFavorite}
               className="ml-2 flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
@@ -185,15 +171,27 @@ const PodcastDetailPlayer = ({
         </div>
       </div>
 
-      {audioUrl && (
-        <button
-          onClick={handlePlay}
-          className="flex items-center gap-2 w-fit bg-orange-1 text-charcoal px-6 py-3 font-bold uppercase tracking-wide hover:bg-orange-1/80 transition-colors cursor-pointer"
-        >
-          <Play size={18} />
-          Play Podcast
-        </button>
-      )}
+      <div className="flex items-center gap-3 flex-wrap">
+        {audioUrl && (
+          <button
+            onClick={handlePlay}
+            className="flex items-center gap-2 w-fit bg-orange-1 text-charcoal px-6 py-3 font-bold uppercase tracking-wide hover:bg-orange-1/80 transition-colors cursor-pointer"
+          >
+            <Play size={18} />
+            Play Podcast
+          </button>
+        )}
+
+        {isOwner && (
+          <button
+            onClick={handleDelete}
+            className="flex items-center gap-2 w-fit border-2 border-red-500 text-red-500 px-6 py-3 font-bold uppercase tracking-wide hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+          >
+            <Trash2 size={18} />
+            Delete
+          </button>
+        )}
+      </div>
     </div>
   );
 };
