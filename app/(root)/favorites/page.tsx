@@ -26,7 +26,7 @@ const Favorites = () => {
         <LoaderSpinner />
       ) : favorites.length > 0 ? (
         <div className="podcast_grid">
-          {favorites.map((podcast) => (
+          {favorites.map((podcast) => podcast && (
             <PodcastCard
               key={podcast._id}
               imgURL={podcast.imageUrl ?? ""}
