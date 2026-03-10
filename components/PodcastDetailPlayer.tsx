@@ -3,12 +3,12 @@
 import Image from "next/image";
 import { normalizeImageSrc } from "@/lib/utils";
 import { useAudio } from "@/app/providers/AudioProvider";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Play, Star } from "lucide-react";
+import { Play, Star, Mail, Loader2 } from "lucide-react";
 import React from "react";
 
 const PodcastDetailPlayer = ({
@@ -41,6 +41,25 @@ const PodcastDetailPlayer = ({
   });
   const toggleFavorite = useMutation(api.favorites.toggleFavorite);
   const [optimisticFav, setOptimisticFav] = React.useState<boolean | null>(null);
+
+  const sendEmail = useAction(api.email.sendPodcastEmail);
+  const [isSending, setIsSending] = React.useState(false);
+
+  const handleSendEmail = async () => {
+    setIsSending(true);
+    try {
+      const podcastUrl = `${window.location.origin}/podcast/${podcastId}`;
+      await sendEmail({
+        podcastId: podcastId as Id<"podcasts">,
+        podcastUrl,
+      });
+      toast.success("Podcast sent to your email!");
+    } catch {
+      toast.error("Failed to send email");
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const favorited = optimisticFav ?? isFavorited ?? false;
 
@@ -145,6 +164,21 @@ const PodcastDetailPlayer = ({
               />
               <span className="text-12 font-bold text-white-3 uppercase tracking-wide">
                 {favorited ? "Favorited" : "Favorite"}
+              </span>
+            </button>
+            <button
+              onClick={handleSendEmail}
+              disabled={isSending}
+              className="ml-2 flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity disabled:opacity-50"
+              title="Send podcast to your email"
+            >
+              {isSending ? (
+                <Loader2 size={20} className="text-white-3 animate-spin" />
+              ) : (
+                <Mail size={20} className="text-white-3" />
+              )}
+              <span className="text-12 font-bold text-white-3 uppercase tracking-wide">
+                {isSending ? "Sending..." : "Email"}
               </span>
             </button>
           </div>
