@@ -9,7 +9,8 @@ function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function buildEmailHtml(
@@ -109,16 +110,25 @@ export const sendPodcastEmail = action({
       throw new ConvexError("No email found for authenticated user");
     }
 
-    // Build audio attachment if audio exists
-    let audioAttachment: { filename: string; content: Buffer } | undefined;
+    // Validate podcastUrl
+    if (!args.podcastUrl.startsWith("https://") && !args.podcastUrl.startsWith("http://")) {
+      throw new ConvexError("Invalid podcast URL");
+    }
+
+    // Build audio attachment if audio exists (skip if >25MB)
+    let audioAttachment: { filename: string; content: Buffer; content_type: string } | undefined;
     if (podcast.audioStorageId) {
       const audioBlob = await ctx.storage.get(podcast.audioStorageId);
       if (audioBlob) {
         const arrayBuffer = await audioBlob.arrayBuffer();
-        audioAttachment = {
-          filename: `${podcast.podcastTitle}.mp3`,
-          content: Buffer.from(arrayBuffer),
-        };
+        if (arrayBuffer.byteLength <= 25 * 1024 * 1024) {
+          const safeTitle = podcast.podcastTitle.replace(/[^a-zA-Z0-9 _-]/g, "") || "podcast";
+          audioAttachment = {
+            filename: `${safeTitle}.mp3`,
+            content: Buffer.from(arrayBuffer),
+            content_type: "audio/mpeg",
+          };
+        }
       }
     }
 
