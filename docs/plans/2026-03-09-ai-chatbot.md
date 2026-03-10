@@ -128,7 +128,7 @@ export const sendMessage = action({
     }
 
     // --- Build system prompt ---
-    const systemPrompt = `You are a macro intelligence assistant for Castory, a platform that tracks macro-economic themes through AI-generated podcast analysis.
+    const systemPrompt = `You are a macro intelligence assistant for Fincast, a platform that tracks macro-economic themes through AI-generated podcast analysis.
 
 Your role:
 - Answer questions about macro themes, podcasts, and developments on the platform

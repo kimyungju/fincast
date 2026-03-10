@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Add macro theme tracking, heat scores, trending topics sidebar, topic detail pages, and async theme tagging to Castory's podcast platform — all working end-to-end for a live hackathon demo.
+**Goal:** Add macro theme tracking, heat scores, trending topics sidebar, topic detail pages, and async theme tagging to Fincast's podcast platform — all working end-to-end for a live hackathon demo.
 
 **Architecture:** Two new Convex tables (`macroThemes`, `themeMentions`) feed a real-time heat score system. When a podcast is published, an async GPT call tags macro themes and records mentions. Mentions recompute heat scores, which drive the trending sidebar and home feed ordering. Convex reactivity pushes all changes to connected clients instantly.
 

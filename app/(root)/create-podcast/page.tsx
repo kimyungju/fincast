@@ -70,7 +70,7 @@ const CreatePodcast = () => {
   });
 
   // --- Draft persistence ---
-  const DRAFT_KEY = "castory:draft:podcast";
+  const DRAFT_KEY = "fincast:draft:podcast";
   const restoredRef = useRef(false);
 
   // Restore draft on mount

@@ -5,8 +5,8 @@ export default function SignInPage() {
   return (
     <div className="flex flex-col items-center space-y-8">
       <div className="flex items-center gap-3">
-        <Image src="/icons/logo.svg" alt="Castory" width={28} height={32} />
-        <span className="text-2xl font-bold text-white">Castory</span>
+        <Image src="/icons/logo.svg" alt="Fincast" width={28} height={32} />
+        <span className="text-2xl font-bold text-white">Fincast</span>
       </div>
 
       <SignIn

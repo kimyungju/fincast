@@ -1,4 +1,4 @@
-# Castory
+# Fincast
 
 An AI-powered podcast platform and **macro economics tracker** built for asset managers. Create AI-narrated news podcasts, track macro-economic themes with real-time heat scoring, and stay on top of market narratives — all in one place.
 

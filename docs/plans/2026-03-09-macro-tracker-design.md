@@ -1,11 +1,11 @@
-# Castory: Macro Economics Tracker Extension — Design
+# Fincast: Macro Economics Tracker Extension — Design
 
 **Date:** 2026-03-09
 **Status:** Approved
 
 ## Goal
 
-Extend Castory into a macro economics tracker for asset managers. Track macro themes, measure trendingness via heat scores, connect developments across regions/asset classes, and surface risk implications — with the podcast platform as the content backbone.
+Extend Fincast into a macro economics tracker for asset managers. Track macro themes, measure trendingness via heat scores, connect developments across regions/asset classes, and surface risk implications — with the podcast platform as the content backbone.
 
 ## Architecture
 

@@ -45,7 +45,7 @@ export default function RootGroupLayout({
               <div className="flex h-16 items-center justify-between md:hidden">
                 <Image
                   src="/icons/logo.svg"
-                  alt="Castory logo"
+                  alt="Fincast logo"
                   width={30}
                   height={30}
                 />

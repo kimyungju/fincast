@@ -132,7 +132,7 @@ export const sendMessage = action({
         : "";
 
     const systemPrompt =
-      `You are Castory AI, a macro-economics research assistant built into the Castory podcast platform. ` +
+      `You are Fincast AI, a macro-economics research assistant built into the Fincast podcast platform. ` +
       `Your users are asset managers and financial professionals who want signal, not noise.\n\n` +
       `Guidelines:\n` +
       `- Be concise and direct. Asset managers value brevity.\n` +

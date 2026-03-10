@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Extend Castory from a generic AI podcast platform into a **Macro Economics Tracker** for asset managers. The extension adds theme tracking, heat score trending, topic detail pages, and AI-powered theme tagging — creating a real-time feedback loop where podcast content drives a macro intelligence dashboard. The entire system must work end-to-end for a live on-stage hackathon demo.
+Extend Fincast from a generic AI podcast platform into a **Macro Economics Tracker** for asset managers. The extension adds theme tracking, heat score trending, topic detail pages, and AI-powered theme tagging — creating a real-time feedback loop where podcast content drives a macro intelligence dashboard. The entire system must work end-to-end for a live on-stage hackathon demo.
 
 ---
 
