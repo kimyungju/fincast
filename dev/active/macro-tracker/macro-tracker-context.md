@@ -1,20 +1,46 @@
 # Macro Economics Tracker — Context Reference
 
-**Last Updated: 2026-03-10 (Session 6)**
+**Last Updated: 2026-03-10 (Session 7)**
 
 ---
 
-## Current State: SESSION 6 CHANGES UNCOMMITTED
+## Current State: ALL COMMITTED + PUSHED
 
-All Session 5 changes were committed+pushed at start of session. Session 6 added:
-- Renamed project from "Castory" to "Fincast" across 23 files
-- AI-generated content-relevant cover art for news podcasts (replaces generic "podcast cover art" prompt)
-- Removed theme badges from PodcastCard (moved to podcast detail page)
-- Added "Create a Podcast" button on topic detail page (always visible, two styles)
-- Updated PORTFOLIO.md with macro tracker content (5 challenges, expanded roadmap)
-- Auth-logo SVG updated: Syne 800 font, wider spacing, uppercase "FINCAST"
+Latest pushed commit: `ec0d20a` on `main`.
+All Session 6 + Session 7 changes committed and pushed.
 
-**All Session 6 changes are uncommitted** (23 files modified).
+---
+
+## Session 7 Summary
+
+### Email-to-Self Feature (new)
+- **Backend**: `convex/email.ts` — `sendPodcastEmail` action via Resend API
+  - Auth-guarded, fetches podcast data, builds branded HTML email
+  - HTML template: Fincast header, title, description, "Listen Now" + "Download Audio" buttons, transcript
+  - No image (Convex storage URLs aren't accessible from email clients)
+  - No attachment (replaced with direct audio URL link)
+  - Security: URL validation, HTML escaping with quote protection, sanitized filenames
+- **Frontend**: `components/PodcastDetailPlayer.tsx` — "Email" button with Mail icon, loading spinner, toast feedback
+- **Dependency**: `resend` npm package
+- **Env var**: `RESEND_API_KEY` set in Convex env
+- **Limitation**: Resend free tier `onboarding@resend.dev` only delivers to account owner's email
+
+### Date Format: Singapore (en-SG)
+- `create-news-podcast/page.tsx` — podcast title auto-generation now uses `toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })` → "9 Mar 2026"
+- `convex/chat.ts` — chatbot mention timestamps use same format
+- Existing podcast titles in DB manually fixed via one-off mutation (also fixed casing: "Us-inflation" → "US Inflation")
+
+### Hydration Fix
+- `components/PodcastCard.tsx` — outer `<button>` changed to `<div role="button">` to fix nested button hydration error (star button inside card button)
+
+### README Updated
+- Renamed to "Fincast", reflects all macro tracker features, email feature added
+- Old generic roadmap items removed, replaced with fintech-relevant next steps
+
+### Database Cleanup
+- Deleted all demo/seed podcasts (fake authors like "Elena Rodriguez", no audio)
+- Deleted old test podcasts from earlier sessions
+- Only real podcasts remain
 
 ---
 
@@ -33,42 +59,30 @@ Fetch 30-day window, compare recent 25% avg vs earlier 75% avg. Mapping: momentu
 Inline SVG polyline. Lightweight, no new dependency.
 
 ### D5: Daily Sparkline Granularity (not weekly)
-Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`). More appropriate for hackathon timeline.
+Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`).
 
-### D6: Auto-Generated Theme Summaries from Web Search (Session 4)
-`generateThemeSummary` uses GPT web_search to find trending articles about the theme label, then summarizes them. Auto-fired via `useEffect` on topic detail page when `latestSummary` is missing. Source article details stored on `macroThemes.summaryArticles`.
+### D6: Auto-Generated Theme Summaries from Web Search
+`generateThemeSummary` uses GPT web_search. Auto-fired via `useEffect` on topic detail page when `latestSummary` is missing.
 
-### D7: Article Details on Theme Mentions (Session 4)
-`themeMentions` has `articleDetails` field alongside the flat `sourceArticles` URL array. The `create-news-podcast` page passes full article objects when calling `tagPodcastThemes`.
+### D7: Article Details on Theme Mentions
+`themeMentions` has `articleDetails` field. `create-news-podcast` passes full article objects when calling `tagPodcastThemes`.
 
-### D8: Star/Favorites System (Session 5)
-**Schema**: `favorites` table with `clerkId` (string), `podcastId` (Id<"podcasts">), `favoritedAt` (number). Indexes: `by_clerkId`, `by_clerkId_podcastId`, `by_podcastId`.
-**Backend** (`convex/favorites.ts`): `toggleFavorite` (idempotent mutation), `isFavorited` (query), `getUserFavorites` (query with full podcast data), `getFavoriteCount` (query).
-**Cascade delete**: `deletePodcast` in `convex/podcast.ts` removes all related favorites.
-**Frontend**: Star overlay on PodcastCard (top-right), favorite button on PodcastDetailPlayer, dedicated `/favorites` page.
-**Design**: Yellow (`yellow-400`) not orange. Favorites only on `/favorites` page — no home page section.
+### D8: Star/Favorites System
+`favorites` table with compound index. Cascade delete in `deletePodcast`. Yellow not orange. Only on `/favorites` page.
 
-### D9: Content-Relevant Cover Art (Session 6)
-**Backend** (`convex/news.ts:generateImagePrompt`): New action takes script text + topic, sends to GPT-4.1-mini to generate a DALL-E prompt focused on real-world subject matter (NOT podcast cover art). Script truncated to 3000 chars.
-**Frontend** (`create-news-podcast/page.tsx`): After script generation, calls `generateImagePrompt` action instead of hardcoded template. Falls back to simple content-based template on error.
-**Design decision**: "Editorial photograph or illustration, NOT podcast cover, NOT abstract art, NOT geometric shapes. Focus on real-world subject matter."
+### D9: Content-Relevant Cover Art
+`convex/news.ts:generateImagePrompt` — GPT → DALL-E prompt focused on real-world content, NOT podcast covers.
 
-### D10: Theme Badges Only on Detail Page (Session 6)
-**Removed** from PodcastCard — all cards now show clean "Episode" bar.
-**Added** to podcast detail page (`podcast/[podcastId]/page.tsx`) — themes section with ThemeBadge components linked to `/topics/[slug]`.
-**Rationale**: Cleaner card grid, themes are supplementary info better suited for detail view.
+### D10: Theme Badges Only on Detail Page
+Removed from PodcastCard. Added to `podcast/[podcastId]/page.tsx` with linked ThemeBadges.
 
-### D11: Project Renamed Castory → Fincast (Session 6)
-Global rename across all UI, config, backend, docs, SVGs. Draft persistence keys changed from `castory:*` to `fincast:*`.
+### D11: Project Renamed Castory → Fincast
 
----
+### D12: Email-to-Self via Resend (Session 7)
+`convex/email.ts` — Resend API. No image, no attachment — direct audio URL link instead. HTML template with Fincast branding.
 
-## Scoring Architecture
-
-**heatScore** (0-3.0): Derived from Google Trends momentum by cron every 3 hours.
-**heatStatus**: Derived from momentum (hot >1.15, warming 1.03-1.15, stable 0.88-1.03, cooling <0.88, dormant 14+ days).
-**relevanceScore** on mentions: Fixed at `1.0`.
-**trendingScore** on podcasts: Sum of linked themes' heatScores.
+### D13: Singapore Date Format (Session 7)
+`en-SG` locale with `{ day: "numeric", month: "short", year: "numeric" }` → "9 Mar 2026".
 
 ---
 
@@ -77,69 +91,49 @@ Global rename across all UI, config, backend, docs, SVGs. Draft persistence keys
 | File | Purpose |
 |------|---------|
 | `convex/schema.ts` | Tables: podcasts, users, macroThemes, themeMentions, favorites |
-| `convex/themes.ts` | Queries (getThemeById, getThemeBySlug, getDailyMentionCounts, etc.) + Mutations (recordMention, updateThemeSummary) |
-| `convex/themeActions.ts` | tagPodcastThemes, generateThemeSummary (web search → summarize → store articles) |
-| `convex/trendsCron.ts` | Momentum-based Google Trends scoring, 8s delays, skip on failure |
+| `convex/themes.ts` | Theme queries/mutations, heat score computation |
+| `convex/themeActions.ts` | tagPodcastThemes, generateThemeSummary |
+| `convex/trendsCron.ts` | Momentum-based Google Trends scoring |
 | `convex/crons.ts` | 3-hour interval cron |
-| `convex/news.ts` | fetchNewsForTopic, generateNewsScript, **generateImagePrompt** (Session 6) |
-| `convex/seedThemes.ts` | Seeds 15 themes with heatScore 0 |
-| `convex/podcast.ts` | CRUD, getTrendingPodcasts, cascade deletes favorites |
+| `convex/news.ts` | fetchNewsForTopic, generateNewsScript, generateImagePrompt |
+| `convex/podcast.ts` | CRUD, getTrendingPodcasts, cascade deletes |
 | `convex/favorites.ts` | toggleFavorite, isFavorited, getUserFavorites, getFavoriteCount |
-| `convex/chat.ts` | **Fincast AI** chatbot action (renamed from Castory AI) |
+| `convex/chat.ts` | Fincast AI chatbot action |
+| `convex/email.ts` | sendPodcastEmail via Resend (Session 7) |
+| `convex/openai.ts` | TTS + DALL-E with sentence-aware chunking |
 
 ## Key Files — Frontend
 
 | File | Purpose |
 |------|---------|
-| `app/(root)/topics/[topicSlug]/page.tsx` | Topic detail: summary, metrics, podcasts, **"Create Podcast" button (2 styles)** |
-| `app/(root)/create-news-podcast/page.tsx` | 5-step wizard — **AI-generated image prompt** (Session 6), draft key `fincast:*` |
-| `app/(root)/podcast/[podcastId]/page.tsx` | Podcast detail — **themes section with linked ThemeBadges** (Session 6) |
+| `app/(root)/create-news-podcast/page.tsx` | 5-step wizard, AI cover art, SG date format |
+| `app/(root)/podcast/[podcastId]/page.tsx` | Detail page with themes section |
 | `app/(root)/favorites/page.tsx` | Favorites grid page |
-| `components/PodcastCard.tsx` | Card with star overlay — **themes removed** (Session 6), always shows "Episode" bar |
-| `components/PodcastDetailPlayer.tsx` | Detail player with favorite button |
-| `components/LeftSidebar.tsx` | Logo text: **Fincast** |
-| `components/MobileNav.tsx` | Logo text: **Fincast** |
-| `public/icons/auth-logo.svg` | **Updated**: Syne 800 uppercase, wider spacing (x=50), viewBox 210 |
-
----
-
-## Design System
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--color-charcoal` | `#0a0a0a` | Darkest background |
-| `--color-dark-gray` | `#1a1a1a` | Card backgrounds |
-| `--color-mid-gray` | `#2a2a2a` | Borders, dividers |
-| `--color-orange` | `#ff6b35` | Primary accent |
-| `--color-cream` | `#f5f1e8` | Text on dark |
-| `yellow-400` | Tailwind default | Star/favorite color (not orange) |
-
-Classes: `card-brutal`, `btn-brutal`, `input-class`, `noise-texture`, `text-display`
-Fonts: Syne 900 uppercase (headings), Crimson Pro italic (descriptions)
-Sidebar icons: `fill="white"` with `opacity="0.4"` (NOT `stroke="currentColor"`)
+| `app/(root)/topics/[topicSlug]/page.tsx` | Topic detail with auto-summary |
+| `components/PodcastCard.tsx` | Card with star overlay, `div role="button"` (not `<button>`) |
+| `components/PodcastDetailPlayer.tsx` | Player + favorite + email buttons |
+| `components/ChatBot.tsx` | Floating AI assistant |
 
 ---
 
 ## Known Issues / Gotchas
 
-- **Google Trends rate limiting**: Returns HTML/CAPTCHA. Momentum helper returns `null`, caller skips theme. 8s delays.
-- **Seed data has heatScore 0**: Run `npx convex run trendsCron:refreshAllTrendsScores` after seeding.
-- **`noise-texture` BREAKS `fixed` positioning**: Sets `position: relative` which overrides Tailwind's `fixed`.
-- **Summary auto-generation fires once per page visit**: `useRef` prevents double-fire but if the action fails silently, loading state persists until page refresh.
-- **`.input-class` overrides Tailwind padding**: Has `padding: 1rem` in CSS. Use inline `style={{ paddingLeft: '2.75rem' }}` for search inputs with icons.
-- **Sidebar SVG icons**: Must use `fill="white"` + `opacity="0.4"`, not `stroke="currentColor"`.
-- **TopicSelector selected state**: Don't apply `text-orange-1` — orange border + background tint is sufficient.
-- **Draft persistence keys changed**: `castory:*` → `fincast:*`. Users with old drafts will lose them (localStorage key mismatch).
-- **Auth-logo SVG uses Syne font**: Browser must have Syne loaded or it falls back to Helvetica Neue.
+- **Google Trends rate limiting**: 8s delays, skip on failure
+- **`noise-texture` BREAKS `fixed` positioning**: Sets `position: relative`
+- **`.input-class` overrides Tailwind padding**: Use inline `style={{ paddingLeft: '2.75rem' }}`
+- **Sidebar SVG icons**: Must use `fill="white"` + `opacity="0.4"`
+- **Resend free tier**: `onboarding@resend.dev` only delivers to account owner's email
+- **Convex storage URLs in emails**: Not accessible from email clients (Gmail blocks them). Don't use podcast images in emails.
+- **PodcastCard must use `<div>` not `<button>`**: Star button is nested inside. Using `<button>` causes hydration errors.
 
 ---
 
 ## Commands Reference
 
 ```bash
+npm run dev
+npm run build
 npx convex run seedThemes:seedMacroThemes
 npx convex run trendsCron:refreshAllTrendsScores
-npm run dev
-npx tsc --noEmit
-npm run lint
+npx convex env set RESEND_API_KEY <key>
 ```

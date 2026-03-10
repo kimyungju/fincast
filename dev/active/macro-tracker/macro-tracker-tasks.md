@@ -1,6 +1,6 @@
 # Macro Economics Tracker — Task Checklist
 
-**Last Updated: 2026-03-10 (Session 6)**
+**Last Updated: 2026-03-10 (Session 7)**
 
 ---
 
@@ -24,58 +24,43 @@ Phases 1-6 (Data Foundation, Seed Data, UI Components, Core Pages, Pipeline Wiri
 - [x] Auto-generate theme summaries from GPT web_search on topic page visit
 - [x] Source article links shown below summary
 - [x] TopicSelector custom topic button fix
-- [x] All committed
 
-## Session 5 Changes (committed at start of Session 6)
+## Session 5 Changes
 
 - [x] Star/Favorites feature — full backend + frontend + dedicated page
 - [x] TopicSelector search padding fix + selected text color fix
 - [x] Sidebar star icon SVG fix
-- [x] All committed + pushed (`a77000d`)
 
-## Session 6 Changes (UNCOMMITTED)
+## Session 6 Changes
 
-### Rename: Castory → Fincast
-- [x] `package.json`, `package-lock.json` — name field
-- [x] `app/layout.tsx` — metadata title
-- [x] `components/LeftSidebar.tsx`, `components/MobileNav.tsx` — logo text
-- [x] `app/(auth)/sign-in/page.tsx` — brand name + alt text
-- [x] `app/(root)/layout.tsx` — logo alt text
-- [x] `app/(root)/profile/[profileId]/page.tsx` — page heading
-- [x] `convex/chat.ts` — system prompt ("Fincast AI")
-- [x] `public/icons/auth-logo.svg` — SVG text element
-- [x] Draft persistence keys: `castory:*` → `fincast:*` (create-podcast, create-news-podcast)
-- [x] CLAUDE.md, PORTFOLIO.md, README.md, all planning docs
+- [x] Rename Castory → Fincast (23 files)
+- [x] AI-generated content-relevant cover art for news podcasts
+- [x] Theme badges moved from PodcastCard → podcast detail page
+- [x] "Create Podcast" button on topic detail page (2 styles)
+- [x] Auth-logo SVG readability improvements
+- [x] PORTFOLIO.md expanded with macro tracker content
+- [x] All committed + pushed (`e562921`)
 
-### AI-Generated Cover Art for News Podcasts
-- [x] `convex/news.ts` — New `generateImagePrompt` action (GPT → DALL-E prompt from script content)
-- [x] `app/(root)/create-news-podcast/page.tsx` — Replaced hardcoded template with AI action call + error fallback
+## Session 7 Changes
 
-### Theme Badges: Card → Detail Page
-- [x] `components/PodcastCard.tsx` — Removed `themes` prop, `ThemeBadge` import, conditional rendering. Always shows "Episode" bar.
-- [x] `app/(root)/page.tsx` — Removed `allThemes` query, `themeMap`, `Id` import. No longer passes themes to PodcastCard.
-- [x] `app/(root)/topics/[topicSlug]/page.tsx` — Removed `allThemes` query, `themeMap`. No longer passes themes to PodcastCard.
-- [x] `app/(root)/podcast/[podcastId]/page.tsx` — Added themes section: loads `allThemes`, maps `themeIds`, renders linked ThemeBadges.
-
-### Topic Detail: Always-Visible "Create Podcast" Button
-- [x] `app/(root)/topics/[topicSlug]/page.tsx` — Two styles:
-  - No podcasts: Original card with italic text + `btn-brutal` button
-  - Has podcasts: Grid card item (dashed border, Mic2 icon, theme label) alongside podcast cards
-
-### Auth Logo Readability
-- [x] `public/icons/auth-logo.svg` — Syne 800 uppercase, `x=50` (more gap from icon), `letter-spacing=2`, viewBox widened to 210
-
-### PORTFOLIO.md Update
-- [x] Reframed as podcast platform → macro intelligence layer
-- [x] Expanded architecture (5 tables, cron, chatbot)
-- [x] 4 challenges (TTS chunking, Google Trends momentum, async theme tagging, context-aware chatbot)
-- [x] Expanded roadmap (alerts, portfolio correlation, multi-source sentiment)
+- [x] Cleaned up database — deleted all demo/seed podcasts (no audio)
+- [x] Email-to-Self feature via Resend API (`convex/email.ts`)
+  - [x] Backend: sendPodcastEmail action (auth, HTML template, audio link)
+  - [x] Frontend: Email button on PodcastDetailPlayer (Mail icon, loading, toast)
+  - [x] Code review fixes: URL validation, quote escaping, filename sanitization, content_type
+  - [x] Removed cover image from email (broken in email clients)
+  - [x] Replaced MP3 attachment with "Download Audio" link button
+- [x] Singapore date format (`en-SG`) for podcast titles + chatbot timestamps
+- [x] Fixed existing podcast titles in DB (date format + casing)
+- [x] Fixed nested button hydration error in PodcastCard (`<button>` → `<div role="button">`)
+- [x] Fixed nullable podcast in favorites page (TS build error)
+- [x] Updated README — full rewrite for Fincast + macro tracker + email feature
+- [x] All committed + pushed (`ec0d20a`)
 
 ---
 
 ## Remaining Work
 
-1. **Commit all Session 6 changes** — 23 files, rename + cover art + themes + logo
-2. **Push to remote**
-3. **Live demo test** — verify cover art generation, theme badges on detail page, create-podcast button on topic pages
-4. **Optional cleanup**: `getThemeArticles` query in `themes.ts` unused
+1. **Optional cleanup**: `getThemeArticles` query in `themes.ts` unused
+2. **Resend custom domain**: Currently using `onboarding@resend.dev` (only delivers to account owner)
+3. **Live demo test**: Verify email feature end-to-end with real podcast
