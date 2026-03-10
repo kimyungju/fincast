@@ -1,10 +1,10 @@
-# Castory: AI Podcast Platform with Macro-Economic Intelligence
+# Fincast: AI Podcast Platform with Macro-Economic Intelligence
 
 ## 1. Overview & Motivation
 
 Asset managers and financial professionals process dozens of macro-economic signals daily — Fed statements, trade policy shifts, commodity moves, geopolitical developments. Most don't have time to synthesize 15 articles into an actionable view. They do, however, have five minutes during a commute to listen to a podcast.
 
-Castory started as a full-stack AI podcast platform and evolved into a macro-economic intelligence layer for finance professionals. It provides two creation workflows:
+Fincast started as a full-stack AI podcast platform and evolved into a macro-economic intelligence layer for finance professionals. It provides two creation workflows:
 
 - **Manual podcast creation** — content creators write scripts, select an AI voice, and generate studio-quality audio with AI-generated cover art.
 

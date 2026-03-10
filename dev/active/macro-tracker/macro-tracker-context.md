@@ -1,16 +1,20 @@
 # Macro Economics Tracker — Context Reference
 
-**Last Updated: 2026-03-09 (Session 5)**
+**Last Updated: 2026-03-10 (Session 6)**
 
 ---
 
-## Current State: FAVORITES FEATURE COMPLETE (uncommitted)
+## Current State: SESSION 6 CHANGES UNCOMMITTED
 
-- Full star/favorite system implemented (backend + frontend + page)
-- TopicSelector search padding fix + selected text color fix
-- Sidebar star icon SVG fixed to match other icons
-- **All Session 5 changes are uncommitted**
-- Topic detail auto-summary, daily sparklines, theme scoring all working from prior sessions
+All Session 5 changes were committed+pushed at start of session. Session 6 added:
+- Renamed project from "Castory" to "Fincast" across 23 files
+- AI-generated content-relevant cover art for news podcasts (replaces generic "podcast cover art" prompt)
+- Removed theme badges from PodcastCard (moved to podcast detail page)
+- Added "Create a Podcast" button on topic detail page (always visible, two styles)
+- Updated PORTFOLIO.md with macro tracker content (5 challenges, expanded roadmap)
+- Auth-logo SVG updated: Syne 800 font, wider spacing, uppercase "FINCAST"
+
+**All Session 6 changes are uncommitted** (23 files modified).
 
 ---
 
@@ -29,7 +33,7 @@ Fetch 30-day window, compare recent 25% avg vs earlier 75% avg. Mapping: momentu
 Inline SVG polyline. Lightweight, no new dependency.
 
 ### D5: Daily Sparkline Granularity (not weekly)
-Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`). "Day / Day" delta instead of "Week / Week". More appropriate for a hackathon project timeline.
+Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`). More appropriate for hackathon timeline.
 
 ### D6: Auto-Generated Theme Summaries from Web Search (Session 4)
 `generateThemeSummary` uses GPT web_search to find trending articles about the theme label, then summarizes them. Auto-fired via `useEffect` on topic detail page when `latestSummary` is missing. Source article details stored on `macroThemes.summaryArticles`.
@@ -42,7 +46,20 @@ Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`). "Day / Day
 **Backend** (`convex/favorites.ts`): `toggleFavorite` (idempotent mutation), `isFavorited` (query), `getUserFavorites` (query with full podcast data), `getFavoriteCount` (query).
 **Cascade delete**: `deletePodcast` in `convex/podcast.ts` removes all related favorites.
 **Frontend**: Star overlay on PodcastCard (top-right), favorite button on PodcastDetailPlayer, dedicated `/favorites` page.
-**Design**: Yellow (`yellow-400`) not orange. Favorites only on `/favorites` page — no home page section (user explicitly removed it).
+**Design**: Yellow (`yellow-400`) not orange. Favorites only on `/favorites` page — no home page section.
+
+### D9: Content-Relevant Cover Art (Session 6)
+**Backend** (`convex/news.ts:generateImagePrompt`): New action takes script text + topic, sends to GPT-4.1-mini to generate a DALL-E prompt focused on real-world subject matter (NOT podcast cover art). Script truncated to 3000 chars.
+**Frontend** (`create-news-podcast/page.tsx`): After script generation, calls `generateImagePrompt` action instead of hardcoded template. Falls back to simple content-based template on error.
+**Design decision**: "Editorial photograph or illustration, NOT podcast cover, NOT abstract art, NOT geometric shapes. Focus on real-world subject matter."
+
+### D10: Theme Badges Only on Detail Page (Session 6)
+**Removed** from PodcastCard — all cards now show clean "Episode" bar.
+**Added** to podcast detail page (`podcast/[podcastId]/page.tsx`) — themes section with ThemeBadge components linked to `/topics/[slug]`.
+**Rationale**: Cleaner card grid, themes are supplementary info better suited for detail view.
+
+### D11: Project Renamed Castory → Fincast (Session 6)
+Global rename across all UI, config, backend, docs, SVGs. Draft persistence keys changed from `castory:*` to `fincast:*`.
 
 ---
 
@@ -59,31 +76,30 @@ Changed from 8-week to 7-day daily buckets (`getDailyMentionCounts`). "Day / Day
 
 | File | Purpose |
 |------|---------|
-| `convex/schema.ts` | Tables: podcasts, users, macroThemes, themeMentions, **favorites** |
+| `convex/schema.ts` | Tables: podcasts, users, macroThemes, themeMentions, favorites |
 | `convex/themes.ts` | Queries (getThemeById, getThemeBySlug, getDailyMentionCounts, etc.) + Mutations (recordMention, updateThemeSummary) |
 | `convex/themeActions.ts` | tagPodcastThemes, generateThemeSummary (web search → summarize → store articles) |
 | `convex/trendsCron.ts` | Momentum-based Google Trends scoring, 8s delays, skip on failure |
 | `convex/crons.ts` | 3-hour interval cron |
-| `convex/news.ts` | fetchNewsForTopic (GPT web_search), generateNewsScript |
+| `convex/news.ts` | fetchNewsForTopic, generateNewsScript, **generateImagePrompt** (Session 6) |
 | `convex/seedThemes.ts` | Seeds 15 themes with heatScore 0 |
-| `convex/podcast.ts` | CRUD, getTrendingPodcasts, **cascade deletes favorites** |
-| `convex/favorites.ts` | **NEW** — toggleFavorite, isFavorited, getUserFavorites, getFavoriteCount |
+| `convex/podcast.ts` | CRUD, getTrendingPodcasts, cascade deletes favorites |
+| `convex/favorites.ts` | toggleFavorite, isFavorited, getUserFavorites, getFavoriteCount |
+| `convex/chat.ts` | **Fincast AI** chatbot action (renamed from Castory AI) |
 
 ## Key Files — Frontend
 
 | File | Purpose |
 |------|---------|
-| `app/(root)/topics/[topicSlug]/page.tsx` | Topic detail: auto-generates summary if missing, shows summary + source links + metrics + podcasts |
-| `app/(root)/create-news-podcast/page.tsx` | 5-step wizard — passes full article details to tagPodcastThemes |
-| `app/(root)/favorites/page.tsx` | **NEW** — Favorites grid page with podcast count, LoaderSpinner, EmptyState |
-| `components/TrendingTopics.tsx` | Compact sidebar list with daily sparkline (7 days) |
-| `components/RiskChainDisplay.tsx` | Risk chain callout (orange left border) |
-| `components/MentionSparkline.tsx` | SVG polyline sparkline |
-| `components/PodcastCard.tsx` | Card with **star overlay** (top-right, yellow fill when favorited) |
-| `components/PodcastDetailPlayer.tsx` | Detail player with **favorite button** (Star icon + text label) |
-| `components/TopicSelector.tsx` | Theme picker with search — **inline padding override for search icon** |
-| `constants/index.ts` | Sidebar links: Home, Discover, **Favorites**, Create Podcast, My Profile |
-| `public/icons/star.svg` | White filled star, opacity 0.4 (matches sidebar icon convention) |
+| `app/(root)/topics/[topicSlug]/page.tsx` | Topic detail: summary, metrics, podcasts, **"Create Podcast" button (2 styles)** |
+| `app/(root)/create-news-podcast/page.tsx` | 5-step wizard — **AI-generated image prompt** (Session 6), draft key `fincast:*` |
+| `app/(root)/podcast/[podcastId]/page.tsx` | Podcast detail — **themes section with linked ThemeBadges** (Session 6) |
+| `app/(root)/favorites/page.tsx` | Favorites grid page |
+| `components/PodcastCard.tsx` | Card with star overlay — **themes removed** (Session 6), always shows "Episode" bar |
+| `components/PodcastDetailPlayer.tsx` | Detail player with favorite button |
+| `components/LeftSidebar.tsx` | Logo text: **Fincast** |
+| `components/MobileNav.tsx` | Logo text: **Fincast** |
+| `public/icons/auth-logo.svg` | **Updated**: Syne 800 uppercase, wider spacing (x=50), viewBox 210 |
 
 ---
 
@@ -110,10 +126,11 @@ Sidebar icons: `fill="white"` with `opacity="0.4"` (NOT `stroke="currentColor"`)
 - **Seed data has heatScore 0**: Run `npx convex run trendsCron:refreshAllTrendsScores` after seeding.
 - **`noise-texture` BREAKS `fixed` positioning**: Sets `position: relative` which overrides Tailwind's `fixed`.
 - **Summary auto-generation fires once per page visit**: `useRef` prevents double-fire but if the action fails silently, loading state persists until page refresh.
-- **`.input-class` overrides Tailwind padding**: Has `padding: 1rem` in CSS. Use inline `style={{ paddingLeft: '2.75rem' }}` for search inputs with icons (TopicSelector, discover page).
-- **Sidebar SVG icons**: Must use `fill="white"` + `opacity="0.4"`, not `stroke="currentColor"`. Mismatch renders icons black.
-- **TopicSelector selected state**: Don't apply `text-orange-1` — orange border + background tint is sufficient. Always use `text-white-1`.
-- **`getThemeArticles` query** in `convex/themes.ts` is unused (source articles come from `theme.summaryArticles`). Can be cleaned up.
+- **`.input-class` overrides Tailwind padding**: Has `padding: 1rem` in CSS. Use inline `style={{ paddingLeft: '2.75rem' }}` for search inputs with icons.
+- **Sidebar SVG icons**: Must use `fill="white"` + `opacity="0.4"`, not `stroke="currentColor"`.
+- **TopicSelector selected state**: Don't apply `text-orange-1` — orange border + background tint is sufficient.
+- **Draft persistence keys changed**: `castory:*` → `fincast:*`. Users with old drafts will lose them (localStorage key mismatch).
+- **Auth-logo SVG uses Syne font**: Browser must have Syne loaded or it falls back to Helvetica Neue.
 
 ---
 
