@@ -25,8 +25,6 @@ const TopicDetailPage = () => {
     api.themes.getPodcastsByTheme,
     theme ? { themeId: theme._id } : "skip",
   );
-  const allThemes = useQuery(api.themes.getTrendingThemes);
-
   // Auto-generate summary if none exists
   const generateSummary = useAction(api.themeActions.generateThemeSummary);
   const generatingRef = useRef(false);
@@ -40,14 +38,6 @@ const TopicDetailPage = () => {
       });
     }
   }, [theme, generateSummary]);
-
-  // Theme lookup for podcast cards
-  const themeMap = new Map<string, { label: string; heatStatus: string }>();
-  if (allThemes) {
-    for (const t of allThemes) {
-      themeMap.set(t._id, { label: t.label, heatStatus: t.heatStatus });
-    }
-  }
 
   if (theme === undefined) {
     return (
@@ -210,22 +200,26 @@ const TopicDetailPage = () => {
           </div>
         ) : (
           <div className="podcast_grid">
-            {podcasts.map((p) => {
-              const pThemes = (p.themeIds ?? [])
-                .map((id) => themeMap.get(id))
-                .filter(Boolean) as { label: string; heatStatus: string }[];
-
-              return (
+            {podcasts.map((p) => (
                 <PodcastCard
                   key={p._id}
                   imgURL={p.imageUrl ?? ""}
                   title={p.podcastTitle}
                   description={p.podcastDescription}
                   podcastId={p._id}
-                  themes={pThemes}
                 />
-              );
-            })}
+            ))}
+            <Link
+              href={`/create-news-podcast?topic=${encodeURIComponent(theme.label)}`}
+              className="card-brutal flex flex-col items-center justify-center gap-4 border-dashed border-mid-gray hover:border-orange-1 transition-all duration-200 min-h-[280px]"
+            >
+              <div className="bg-orange-1 border-4 border-charcoal p-4">
+                <Mic2 className="w-8 h-8 text-charcoal" />
+              </div>
+              <span className="text-14 font-bold text-white-4 uppercase tracking-wide text-center px-4">
+                Create a Podcast About {theme.label}
+              </span>
+            </Link>
           </div>
         )}
       </div>

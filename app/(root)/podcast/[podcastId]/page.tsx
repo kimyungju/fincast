@@ -10,6 +10,8 @@ import PodcastDetailPlayer from "@/components/PodcastDetailPlayer";
 import PodcastCard from "@/components/PodcastCard";
 import EmptyState from "@/components/EmptyState";
 import { Eye } from "lucide-react";
+import ThemeBadge from "@/components/ThemeBadge";
+import Link from "next/link";
 
 const PodcastDetails = () => {
   const { podcastId } = useParams<{ podcastId: string }>();
@@ -22,6 +24,8 @@ const PodcastDetails = () => {
   const similarPodcasts = useQuery(api.podcast.getPodcastByVoiceType, {
     podcastId: podcastId as Id<"podcasts">,
   });
+
+  const allThemes = useQuery(api.themes.getTrendingThemes);
 
   if (!podcast || !user) return <LoaderSpinner />;
 
@@ -64,6 +68,27 @@ const PodcastDetails = () => {
             <p className="text-16 text-white-3 font-serif">{podcast.imagePrompt}</p>
           </div>
         )}
+
+        {/* Themes */}
+        {(() => {
+          const themeIds = podcast.themeIds ?? [];
+          if (themeIds.length === 0 || !allThemes) return null;
+          const themeMap = new Map(allThemes.map((t) => [t._id, t]));
+          const linked = themeIds.map((id) => themeMap.get(id)).filter(Boolean);
+          if (linked.length === 0) return null;
+          return (
+            <div className="flex flex-col gap-3">
+              <h2 className="text-18 font-bold text-white-1 uppercase">Themes</h2>
+              <div className="flex flex-wrap gap-2">
+                {linked.map((t) => (
+                  <Link key={t!._id} href={`/topics/${t!.slug}`}>
+                    <ThemeBadge status={t!.heatStatus} label={t!.label} size="md" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       <section className="flex flex-col gap-5 mt-8">

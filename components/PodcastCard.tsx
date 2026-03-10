@@ -8,25 +8,17 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { normalizeImageSrc } from "@/lib/utils";
 import { Headphones, Star } from "lucide-react";
-import ThemeBadge from "./ThemeBadge";
-
-interface ThemeInfo {
-  label: string;
-  heatStatus: string;
-}
 
 const PodcastCard = ({
   imgURL,
   title,
   description,
   podcastId,
-  themes,
 }: {
   imgURL: string;
   title: string;
   description: string;
   podcastId: Id<"podcasts">;
-  themes?: ThemeInfo[];
 }) => {
   const router = useRouter();
   const updateViews = useMutation(api.podcast.updatePodcastViews);
@@ -133,28 +125,13 @@ const PodcastCard = ({
                 {description}
               </h2>
 
-              {themes && themes.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-3 pt-2 border-t border-mid-gray/30">
-                  {themes.slice(0, 3).map((t) => (
-                    <ThemeBadge key={t.label} status={t.heatStatus} label={t.label} />
-                  ))}
-                  {themes.length > 3 && (
-                    <span className="text-10 text-white-4 font-bold self-center">
-                      +{themes.length - 3}
-                    </span>
-                  )}
-                </div>
-              )}
-
               {/* Decorative Element */}
-              {(!themes || themes.length === 0) && (
-                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-mid-gray/30">
-                  <div className="h-1 w-12 bg-orange-1" />
-                  <span className="text-10 text-white-4 uppercase tracking-widest font-bold">
-                    Episode
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center gap-2 mt-3 pt-2 border-t border-mid-gray/30">
+                <div className="h-1 w-12 bg-orange-1" />
+                <span className="text-10 text-white-4 uppercase tracking-widest font-bold">
+                  Episode
+                </span>
+              </div>
             </div>
           </div>
         </div>

@@ -3,20 +3,11 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import PodcastCard from "@/components/PodcastCard";
-import { Id } from "@/convex/_generated/dataModel";
 import { Loader, Mic2 } from "lucide-react";
 import Link from "next/link";
 
 const Home = () => {
   const trendingPodcasts = useQuery(api.podcast.getTrendingPodcasts);
-  const allThemes = useQuery(api.themes.getTrendingThemes);
-
-  const themeMap = new Map<string, { label: string; heatStatus: string }>();
-  if (allThemes) {
-    for (const t of allThemes) {
-      themeMap.set(t._id, { label: t.label, heatStatus: t.heatStatus });
-    }
-  }
 
   return (
     <div className="mt-9 flex flex-col gap-9">
@@ -43,22 +34,15 @@ const Home = () => {
           </div>
         ) : (
           <div className="podcast_grid">
-            {trendingPodcasts.map(({ _id, podcastTitle, podcastDescription, imageUrl, themeIds }) => {
-              const themes = (themeIds ?? [])
-                .map((id: Id<"macroThemes">) => themeMap.get(id))
-                .filter(Boolean) as { label: string; heatStatus: string }[];
-
-              return (
+            {trendingPodcasts.map(({ _id, podcastTitle, podcastDescription, imageUrl }) => (
                 <PodcastCard
                   key={_id}
                   imgURL={imageUrl ?? ""}
                   title={podcastTitle}
                   description={podcastDescription}
                   podcastId={_id}
-                  themes={themes}
                 />
-              );
-            })}
+            ))}
           </div>
         )}
       </section>
