@@ -89,11 +89,12 @@ const CreateNewsPodcast = () => {
   // Convex actions
   const fetchNews = useAction(api.news.fetchNewsForTopic);
   const generateScript = useAction(api.news.generateNewsScript);
+  const generateImagePrompt = useAction(api.news.generateImagePrompt);
   const createPodcast = useMutation(api.podcast.createPodcast);
   const tagThemes = useAction(api.themeActions.tagPodcastThemes);
 
   // --- Draft persistence ---
-  const DRAFT_KEY = "castory:draft:news-podcast";
+  const DRAFT_KEY = "fincast:draft:news-podcast";
   const restoredRef = useRef(false);
 
   // Restore draft on mount
@@ -234,11 +235,21 @@ const CreateNewsPodcast = () => {
       // Pre-fill voice prompt with script
       setVoicePrompt(result);
 
-      // Auto-fill image prompt
+      // Auto-fill image prompt using AI to match article content
       if (!imagePrompt) {
-        setImagePrompt(
-          `A bold, modern podcast cover art for a ${selectedTopic} news podcast. Dark background with vibrant orange accents. Abstract geometric shapes suggesting ${selectedTopic} themes. Bold typography style. Professional and eye-catching.`
-        );
+        try {
+          const aiPrompt = await generateImagePrompt({
+            scriptText: result,
+            topic: selectedTopic!,
+          });
+          if (aiPrompt) {
+            setImagePrompt(aiPrompt);
+          }
+        } catch {
+          setImagePrompt(
+            `A vivid, photorealistic editorial image representing today's key ${selectedTopic} news events and developments.`
+          );
+        }
       }
 
       setCurrentStep(2);

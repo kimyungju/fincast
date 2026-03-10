@@ -91,3 +91,34 @@ Requirements:
     return response.choices[0]?.message?.content ?? "";
   },
 });
+
+export const generateImagePrompt = action({
+  args: {
+    scriptText: v.string(),
+    topic: v.string(),
+  },
+  handler: async (_ctx, args) => {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new ConvexError("OPENAI_API_KEY is not set");
+
+    const openai = new OpenAI({ apiKey });
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert at writing DALL-E image prompts. Given a news script, generate a single DALL-E prompt that visually represents the most important event or theme from the script. The image should look like a striking editorial photograph or illustration — NOT a podcast cover, NOT abstract art, NOT geometric shapes. Focus on the real-world subject matter: people, places, objects, events. Return ONLY the prompt text, nothing else. Keep it under 200 words.`,
+        },
+        {
+          role: "user",
+          content: `Topic: ${args.topic}\n\nScript:\n${args.scriptText.slice(0, 3000)}`,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 300,
+    });
+
+    return response.choices[0]?.message?.content?.trim() ?? "";
+  },
+});
