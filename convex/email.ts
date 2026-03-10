@@ -40,11 +40,10 @@ function buildEmailHtml(
               <span style="color:#ff6b35;font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:1px;">Fincast</span>
             </td>
           </tr>
-          <!-- Title + Description -->
+          <!-- Title -->
           <tr>
             <td style="padding:24px 32px;">
-              <h2 style="margin:0 0 12px 0;font-size:22px;font-weight:800;color:#0a0a0a;">${escapeHtml(title)}</h2>
-              <p style="margin:0;font-size:15px;color:#555;line-height:1.5;">${escapeHtml(description)}</p>
+              <h2 style="margin:0;font-size:22px;font-weight:800;color:#0a0a0a;">${escapeHtml(title)}</h2>
             </td>
           </tr>
           <!-- Listen Button -->

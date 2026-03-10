@@ -10,6 +10,7 @@
 
 import type * as chat from "../chat.js";
 import type * as crons from "../crons.js";
+import type * as email from "../email.js";
 import type * as favorites from "../favorites.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
@@ -31,6 +32,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   chat: typeof chat;
   crons: typeof crons;
+  email: typeof email;
   favorites: typeof favorites;
   files: typeof files;
   http: typeof http;
