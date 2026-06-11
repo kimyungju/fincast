@@ -1,0 +1,32 @@
+name: Unit Tests
+
+# Fast, hermetic unit tests for pure helpers (news-article parsing/validation).
+# No secrets, no Convex runtime, no browser.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        # npm install (not npm ci): npm ci's strict cross-platform handling of
+        # platform-specific optional deps (esbuild) fails with EBADPLATFORM on
+        # Linux runners.
+        run: npm install
+
+      - name: Run unit tests
+        run: npm test

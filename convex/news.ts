@@ -3,6 +3,7 @@
 import { action } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import OpenAI from "openai";
+import { parseNewsArticles } from "./lib/newsParser";
 
 export const fetchNewsForTopic = action({
   args: {
@@ -22,11 +23,15 @@ export const fetchNewsForTopic = action({
       input: `Find the top ${count} trending ${args.topic} news articles from today. Return ONLY a JSON array with no other text. Each item should have: title (string), summary (2-3 sentence summary), source (publication name), url (article URL). Format: [{"title":"...","summary":"...","source":"...","url":"..."}]`,
     });
 
-    const text = response.output_text;
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new ConvexError("Failed to parse news articles from search results");
-
-    return JSON.parse(jsonMatch[0]);
+    // Validate the model's JSON against the article shape before returning:
+    // drop malformed rows, throw only when nothing usable comes back.
+    try {
+      return parseNewsArticles(response.output_text);
+    } catch (err) {
+      throw new ConvexError(
+        err instanceof Error ? err.message : "Failed to parse news articles",
+      );
+    }
   },
 });
 
